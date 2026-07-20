@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const { Client, GatewayIntentBits, UserFlagsBitField } = require("discord.js");
 const nodemailer = require("nodemailer");

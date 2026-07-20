@@ -4,3 +4,4 @@ node_modules
 sms_gateway_data.json
 *.zip
 .DS_Store
+cpanel/

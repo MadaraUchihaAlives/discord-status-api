@@ -65,7 +65,7 @@ async function verifyFirebaseToken(idToken) {
   const projectId = getProjectId();
   const issuer = 'https://securetoken.google.com/' + projectId;
 
-  const payload = jwt.verify(certToPEM(cert), {
+  const payload = jwt.verify(idToken, certToPEM(cert), {
     algorithms: ['RS256'],
     audience: projectId,
     issuer
