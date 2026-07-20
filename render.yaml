@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: xd-sms-gateway
+    env: node
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    plan: free
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: "https://sms.luffyxd.store"
+      - key: ADMIN_USERNAME
+        value: "nabeelxd"
+      - key: ADMIN_PASSWORD
+        value: "nabeelxd@123"
+      - key: FIREBASE_PROJECT_ID
+        value: "api-firebase-nabeelxd"
+      - key: FIREBASE_DATABASE_URL
+        value: "https://api-firebase-nabeelxd-default-rtdb.asia-southeast1.firebasedatabase.app/"
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: FIREBASE_DATABASE_SECRET
+        sync: false
