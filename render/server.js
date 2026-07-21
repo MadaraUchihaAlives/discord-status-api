@@ -6,7 +6,6 @@ const path = require("path");
 const axios = require("axios");
 const crypto = require("crypto");
 const initSmsGateway = require("./sms-gateway");
-const rtdb = require("./firebase-init");
 
 const app = express();
 app.use(express.text({ type: '*/*', limit: '1mb' }));

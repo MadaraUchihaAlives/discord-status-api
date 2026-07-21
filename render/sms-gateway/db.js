@@ -1,107 +1,25 @@
 'use strict';
 
+const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
-const rtdb = require('../firebase-init');
 
-const ROOT = 'sms_gateway';
+const API_URL = process.env.MYSQL_API_URL || process.env.FRONTEND_URL ? process.env.FRONTEND_URL + '/cpanel/api.php' : 'https://api.sms.luffyxd.store/cpanel/api.php';
+const API_USER = process.env.MYSQL_API_USER || process.env.ADMIN_USERNAME;
+const API_PASS = process.env.MYSQL_API_PASS || process.env.ADMIN_PASSWORD;
 
-const ARRAY_COLLECTIONS = [
-  'users',
-  'sessions',
-  'devices',
-  'api_keys',
-  'webhooks',
-  'webhook_deliveries',
-  'sms_queue',
-  'sms_history',
-  'logs',
-  'settings'
-];
-
-const defaultData = {
-  users: [],
-  sessions: [],
-  devices: [],
-  api_keys: [],
-  webhooks: [],
-  webhook_deliveries: [],
-  sms_queue: [],
-  sms_history: [],
-  logs: [],
-  settings: [],
-  gateway_state: {}
-};
-
-let cache = null;
-let initPromise = null;
-
-function objToArray(obj) {
-  if (!obj || typeof obj !== 'object') return [];
-  return Object.values(obj);
-}
-
-function arrayToObj(arr) {
-  if (!Array.isArray(arr) || arr.length === 0) return null;
-  const result = {};
-  for (const item of arr) {
-    if (item && item.id) result[item.id] = item;
-  }
-  return Object.keys(result).length > 0 ? result : null;
-}
-
-function fbToData(fbVal) {
-  const data = JSON.parse(JSON.stringify(defaultData));
-  if (!fbVal) return data;
-  for (const col of ARRAY_COLLECTIONS) {
-    data[col] = fbVal[col] ? objToArray(fbVal[col]) : [];
-  }
-  data.gateway_state = fbVal.gateway_state || {};
-  return data;
-}
-
-function dataToFb(data) {
-  const fb = {};
-  for (const col of ARRAY_COLLECTIONS) {
-    const obj = arrayToObj(data[col]);
-    if (obj) fb[col] = obj;
-  }
-  if (data.gateway_state && Object.keys(data.gateway_state).length > 0) {
-    fb.gateway_state = data.gateway_state;
-  }
-  return fb;
-}
-
-async function initDb() {
-  const fbVal = await rtdb.get(ROOT);
-  cache = fbToData(fbVal);
-}
-
-async function load() {
-  if (cache) return cache;
-  if (!initPromise) initPromise = initDb();
-  await initPromise;
-  return cache;
-}
-
-async function persist() {
-  const fbData = dataToFb(cache);
-  await rtdb.set(ROOT, Object.keys(fbData).length > 0 ? fbData : null);
+function authHeader() {
+  return API_USER && API_PASS ? { Authorization: 'Basic ' + Buffer.from(API_USER + ':' + API_PASS).toString('base64') } : {};
 }
 
 async function getData() {
-  return load();
-}
-
-async function saveData(data) {
-  cache = data;
-  await persist();
+  const { data } = await axios.get(API_URL + '?action=read', { headers: authHeader() });
+  return data;
 }
 
 async function mutate(fn) {
-  const data = await load();
+  const data = await getData();
   const result = await fn(data);
-  cache = data;
-  await persist();
+  await axios.post(API_URL + '?action=write', data, { headers: { ...authHeader(), 'Content-Type': 'application/json' } });
   return result;
 }
 
@@ -159,7 +77,6 @@ function getGatewayState(data, userId) {
 
 module.exports = {
   getData,
-  saveData,
   mutate,
   now,
   findUserByEmail,
