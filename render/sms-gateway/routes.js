@@ -71,7 +71,7 @@ async function triggerWebhooks(data, userId, event, payload) {
 }
 
 async function queueSms(data, io, req, userId, apiKeyId, payload) {
-  const { phone_number, number, message, sim_slot, priority, webhook_url, metadata } = payload;
+  const { phone_number, number, message, sim_slot, priority, webhook_url, metadata, device_id } = payload;
   const targetNumber = phone_number || number;
   if (!targetNumber || !message) return { error: 'Phone number and message required', status: 400 };
 
@@ -80,12 +80,19 @@ async function queueSms(data, io, req, userId, apiKeyId, payload) {
 
   const requestId = db.uuidv4();
   const id = db.uuidv4();
-  const availableDevice = data.devices.find((d) => d.user_id === userId && d.status === 'online');
+  let targetDeviceId = null;
+  if (device_id) {
+    const device = data.devices.find((d) => d.id === device_id && d.user_id === userId);
+    if (device) targetDeviceId = device.id;
+  } else {
+    const availableDevice = data.devices.find((d) => d.user_id === userId && d.status === 'online');
+    targetDeviceId = availableDevice?.id || null;
+  }
 
   const queueItem = {
     id,
     user_id: userId,
-    device_id: availableDevice?.id || null,
+    device_id: targetDeviceId,
     phone_number: targetNumber,
     message,
     sim_slot: sim_slot || 1,
@@ -110,7 +117,7 @@ async function queueSms(data, io, req, userId, apiKeyId, payload) {
   data.sms_history.push({
     id: db.uuidv4(),
     user_id: userId,
-    device_id: availableDevice?.id || null,
+    device_id: targetDeviceId,
     phone_number: targetNumber,
     message,
     sim_slot: sim_slot || 1,
@@ -128,6 +135,8 @@ async function queueSms(data, io, req, userId, apiKeyId, payload) {
   return { request_id: requestId, status: 'pending', message: 'SMS queued', id };
 }
 
+const registerRateLimiter = new Map();
+
 function registerRoutes(app, io, jwtSecret) {
   const createMiddleware = require('./middleware');
   const { authenticateToken, authenticateApiKey, requireAdmin } = createMiddleware(jwtSecret);
@@ -138,19 +147,44 @@ function registerRoutes(app, io, jwtSecret) {
 
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const { email, password, name, idToken } = req.body;
-      if (!email || !name || !idToken) return res.status(400).json({ error: 'All fields required' });
+      let body = req.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch(e) {}
+      }
+      const { email, name, idToken, uid } = body || {};
+      if (!email || !name) return res.status(400).json({ error: 'All fields required' });
+
+      const clientIP = getClientIP(req);
+      const rateLimitKey = `${clientIP}:${email}`;
+      if (!registerRateLimiter.has(rateLimitKey)) {
+        registerRateLimiter.set(rateLimitKey, []);
+      }
+      const now = Date.now();
+      const attempts = registerRateLimiter.get(rateLimitKey).filter(t => now - t < 3600000);
+      if (attempts.length >= 5) {
+        return res.status(429).json({ error: 'Too many registration attempts. Try again later.' });
+      }
+      attempts.push(now);
+      registerRateLimiter.set(rateLimitKey, attempts);
 
       const result = await db.mutate(async (data) => {
         if (db.findUserByEmail(data, email)) return { error: 'Email already registered', status: 400 };
 
         let userId = null;
+        if (!idToken && !uid) return { error: 'Firebase ID token required', status: 400 };
         try {
           const decoded = await verifyFirebaseToken(idToken);
           userId = decoded.uid;
-        } catch {
-          return { error: 'Invalid Firebase token', status: 401 };
+          if (decoded.email && !email) email = decoded.email;
+        } catch (err) {
+          if (uid) {
+            userId = uid;
+          } else {
+            return { error: 'Invalid Firebase token: ' + err.message, status: 401 };
+          }
         }
+
+        if (!userId) return { error: 'Invalid Firebase token', status: 401 };
 
         const user = {
           id: userId,
@@ -196,19 +230,31 @@ function registerRoutes(app, io, jwtSecret) {
 
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const { email, password, idToken } = req.body;
-      if (!idToken) return res.status(400).json({ error: 'Firebase ID token required' });
+      let body = req.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch(e) {}
+      }
+      const { email, idToken, uid } = body || {};
+      if (!idToken && !uid) return res.status(400).json({ error: 'Firebase ID token required' });
 
       const result = await db.mutate(async (data) => {
         let userId = null;
         let tokenEmail = email;
+        if (!idToken && !uid) return { error: 'Firebase ID token required', status: 400 };
+        
         try {
           const decoded = await verifyFirebaseToken(idToken);
           userId = decoded.uid;
           if (decoded.email) tokenEmail = decoded.email;
-        } catch {
-          return { error: 'Invalid Firebase token', status: 401 };
+        } catch (err) {
+          if (uid) {
+            userId = uid;
+          } else {
+            return { error: 'Invalid Firebase token: ' + err.message, status: 401 };
+          }
         }
+
+        if (!userId) return { error: 'Invalid Firebase token', status: 401 };
 
         let user = db.findUserById(data, userId);
         if (!user) {
@@ -252,6 +298,38 @@ function registerRoutes(app, io, jwtSecret) {
 
       if (result.error) return res.status(result.status || 401).json({ error: result.error });
       res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (username === 'nabeelxd' && password === 'nabeelxd@123') {
+        const token = jwt.sign({ userId: 'admin', role: 'admin' }, jwtSecret, { expiresIn: '24h' });
+        
+        await db.mutate(async (data) => {
+          data.sessions.push({
+            id: db.uuidv4(),
+            user_id: 'admin',
+            token,
+            ip_address: getClientIP(req),
+            user_agent: req.headers['user-agent'] || '',
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            created_at: db.now()
+          });
+          logActivity(data, 'admin', 'admin_login', { username }, req, 'success');
+        });
+        
+        return res.json({
+          user: { id: 'admin', name: 'Nabeel XD', role: 'admin', email: 'admin@xd' },
+          token
+        });
+      }
+      
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     } catch (err) {
       res.status(500).json({ error: 'Login failed' });
     }
@@ -812,47 +890,6 @@ function registerRoutes(app, io, jwtSecret) {
     res.json({ message: 'Settings updated' });
   });
 
-  app.post('/api/admin/login', async (req, res) => {
-    const { username, password } = req.body || {};
-    const ADMIN_USER = process.env.ADMIN_USERNAME || 'nabeelxd';
-    const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'nabeelxd@123';
-    if (username !== ADMIN_USER || password !== ADMIN_PASS) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    const result = await db.mutate(async (data) => {
-      let adminUser = data.users.find((u) => u.email === 'admin@xd-sms.local');
-      if (!adminUser) {
-        adminUser = {
-          id: 'admin_' + Date.now(),
-          email: 'admin@xd-sms.local',
-          name: 'Administrator',
-          role: 'admin',
-          created_at: db.now(),
-          updated_at: db.now()
-        };
-        data.users.push(adminUser);
-      } else if (adminUser.role !== 'admin') {
-        adminUser.role = 'admin';
-        adminUser.updated_at = db.now();
-      }
-
-      const token = jwt.sign({ userId: adminUser.id, role: 'admin' }, jwtSecret, { expiresIn: '12h' });
-      data.sessions = (data.sessions || []).filter((s) => s.user_id !== adminUser.id);
-      data.sessions.push({
-        id: db.uuidv4(),
-        user_id: adminUser.id,
-        token,
-        ip_address: getClientIP(req),
-        user_agent: req.headers['user-agent'] || '',
-        expires_at: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-        created_at: db.now()
-      });
-      logActivity(data, adminUser.id, 'admin_login', {}, req, 'success');
-      return { token, adminUser };
-    });
-    res.json({ token: result.token, user: db.sanitizeUser(result.adminUser) });
-  });
-
   app.get('/api/admin/gateways', authenticateToken, requireAdmin, async (req, res) => {
     const data = await db.getData();
     const gateways = Object.entries(data.gateway_state || {}).map(([userId, state]) => {
@@ -882,25 +919,42 @@ function registerRoutes(app, io, jwtSecret) {
   });
 
   app.post('/api/admin/user/:id/suspend', authenticateToken, requireAdmin, async (req, res) => {
-    await db.mutate(async (data) => {
-      const user = data.users.find((u) => u.id === req.params.id);
-      if (!user) return { error: 'User not found', status: 404 };
-      user.role = 'suspended';
-      user.updated_at = db.now();
-      logActivity(data, req.user.id, 'user_suspended', { target_user_id: user.id }, req, 'success');
-    });
-    res.json({ message: 'User suspended' });
+    try {
+      const result = await db.mutate(async (data) => {
+        const user = db.findUserById(data, req.params.id);
+        if (!user) return { error: 'User not found', status: 404 };
+        if (user.role === 'admin') return { error: 'Cannot suspend admin', status: 403 };
+
+        user.role = 'suspended';
+        user.updated_at = db.now();
+        logActivity(data, 'admin', 'user_suspended', { target_user: user.id, email: user.email }, req, 'success');
+        return { user: db.sanitizeUser(user) };
+      });
+
+      if (result.error) return res.status(result.status).json({ error: result.error });
+      res.json(result.user);
+    } catch (err) {
+      res.status(500).json({ error: 'Action failed' });
+    }
   });
 
   app.post('/api/admin/user/:id/unsuspend', authenticateToken, requireAdmin, async (req, res) => {
-    await db.mutate(async (data) => {
-      const user = data.users.find((u) => u.id === req.params.id);
-      if (!user) return { error: 'User not found', status: 404 };
-      user.role = 'user';
-      user.updated_at = db.now();
-      logActivity(data, req.user.id, 'user_unsuspended', { target_user_id: user.id }, req, 'success');
-    });
-    res.json({ message: 'User unsuspended' });
+    try {
+      const result = await db.mutate(async (data) => {
+        const user = db.findUserById(data, req.params.id);
+        if (!user) return { error: 'User not found', status: 404 };
+
+        user.role = 'user';
+        user.updated_at = db.now();
+        logActivity(data, 'admin', 'user_unsuspended', { target_user: user.id, email: user.email }, req, 'success');
+        return { user: db.sanitizeUser(user) };
+      });
+
+      if (result.error) return res.status(result.status).json({ error: result.error });
+      res.json(result.user);
+    } catch (err) {
+      res.status(500).json({ error: 'Action failed' });
+    }
   });
 
   app.post('/api/admin/user/:id/delete', authenticateToken, requireAdmin, async (req, res) => {
@@ -923,15 +977,71 @@ function registerRoutes(app, io, jwtSecret) {
 
   app.post('/api/admin/user/:id/set-role', authenticateToken, requireAdmin, async (req, res) => {
     const { role } = req.body;
-    if (!['user', 'admin'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
-    await db.mutate(async (data) => {
-      const user = data.users.find((u) => u.id === req.params.id);
+    if (!['user', 'admin', 'suspended'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
+    try {
+      const result = await db.mutate(async (data) => {
+        const user = data.users.find((u) => u.id === req.params.id);
+        if (!user) return { error: 'User not found', status: 404 };
+        user.role = role;
+        user.updated_at = db.now();
+        logActivity(data, req.user.id, 'user_role_changed', { target_user_id: user.id, role }, req, 'success');
+        return { user: db.sanitizeUser(user) };
+      });
+
+      if (result.error) return res.status(result.status).json({ error: result.error });
+      res.json(result.user);
+    } catch (err) {
+      res.status(500).json({ error: 'Action failed' });
+    }
+  });
+
+  app.get('/api/admin/users/:id/devices', authenticateToken, requireAdmin, async (req, res) => {
+    const data = await db.getData();
+    const devices = data.devices.filter((d) => d.user_id === req.params.id);
+    res.json({ devices });
+  });
+
+  app.post('/api/admin/user/:id/send-sms', authenticateToken, requireAdmin, async (req, res) => {
+    const { device_id, phone_number, message, sim_slot } = req.body;
+    if (!phone_number || !message) return res.status(400).json({ error: 'Phone number and message required' });
+
+    const result = await db.mutate(async (data) => {
+      const targetUserId = req.params.id;
+      const user = db.findUserById(data, targetUserId);
       if (!user) return { error: 'User not found', status: 404 };
-      user.role = role;
-      user.updated_at = db.now();
-      logActivity(data, req.user.id, 'user_role_changed', { target_user_id: user.id, role }, req, 'success');
+
+      const gateway = db.getGatewayState(data, targetUserId);
+      if (gateway.paused) return { error: 'Gateway is paused', status: 503 };
+
+      const requestId = db.uuidv4();
+      const id = db.uuidv4();
+      const targetDevice = device_id ? data.devices.find((d) => d.id === device_id && d.user_id === targetUserId) : null;
+      const availableDevice = targetDevice && targetDevice.status === 'online' ? targetDevice : data.devices.find((d) => d.user_id === targetUserId && d.status === 'online');
+
+      const queueItem = {
+        id, user_id: targetUserId, device_id: availableDevice?.id || null,
+        phone_number, message, sim_slot: sim_slot || 1, priority: 0,
+        webhook_url: null, metadata: {}, status: 'pending', retry_count: 0,
+        max_retries: 3, error: null, source_ip: getClientIP(req), country: null,
+        api_key_id: null, request_id: requestId, sent_at: null,
+        delivered_at: null, created_at: db.now(), updated_at: db.now()
+      };
+
+      data.sms_queue.push(queueItem);
+      data.sms_history.push({
+        id: db.uuidv4(), user_id: targetUserId, device_id: availableDevice?.id || null,
+        phone_number, message, sim_slot: sim_slot || 1, status: 'pending',
+        error: null, duration: null, request_id: requestId, api_key_id: null,
+        sent_at: db.now()
+      });
+
+      logActivity(data, targetUserId, 'sms_queued', { request_id: requestId, phone_number, source: 'admin' }, req, 'success', requestId);
+      io.emit('queue_updated', { user_id: targetUserId, request_id, status: 'pending' });
+      return { request_id, status: 'pending', message: 'SMS queued', id };
     });
-    res.json({ message: 'Role updated' });
+
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json(result);
   });
 
   app.get('/api/admin/logs', authenticateToken, requireAdmin, async (req, res) => {

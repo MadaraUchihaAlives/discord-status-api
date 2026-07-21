@@ -1,0 +1,276 @@
+{
+  "users": [
+    {
+      "id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "email": "test_1784376315340@xd.test",
+      "password": "$2a$12$bRZrKrrEp7CnOEQOy2wtReMErvFb2C92AQLK0cueaToQJ/hsDK0a.",
+      "name": "Test User",
+      "role": "user",
+      "created_at": "2026-07-18T12:05:15.718Z",
+      "updated_at": "2026-07-18T12:05:15.718Z"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "652398c2-ae4d-4fd3-83a6-0cffb248dacf",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNjUxYjliZS1hYTJiLTQ0ZDMtYjkxMC00MGZmZmFkOTk0YjIiLCJpYXQiOjE3ODQzNzYzMTUsImV4cCI6MTc4NDk4MTExNX0.lddiwZlR1KlK72ib0h0L3ItbgGNjqxr7LQtSdLGm-iw",
+      "ip_address": "::ffff:127.0.0.1",
+      "user_agent": "",
+      "expires_at": "2026-07-25T12:05:15.722Z",
+      "created_at": "2026-07-18T12:05:15.722Z"
+    }
+  ],
+  "devices": [
+    {
+      "id": "206bb74f-6692-435f-9936-0f650b63b3da",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "device_name": "Test Android",
+      "gateway_name": "XD Gateway",
+      "android_version": null,
+      "phone_model": "Pixel Test",
+      "brand": null,
+      "battery": 90,
+      "charging": 0,
+      "network_type": null,
+      "carrier": "TestNet",
+      "sim_number": "+919999999999",
+      "sim_slot": 1,
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "timezone": null,
+      "ram_usage": 0,
+      "storage_usage": 0,
+      "cpu_usage": 0,
+      "uptime": 0,
+      "status": "online",
+      "socket_id": null,
+      "last_seen": "2026-07-18T12:05:15.744Z",
+      "created_at": "2026-07-18T12:05:15.733Z",
+      "updated_at": "2026-07-18T12:05:15.733Z"
+    }
+  ],
+  "api_keys": [
+    {
+      "id": "765a86cc-52de-4d48-b260-5fc4da6232dd",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "key": "a2c64f471d435807e1151ceef48793021634d9438a6b2d67415f6ec2174a590b",
+      "name": "Test Key",
+      "masked_key": "a2c64f47...174a590b",
+      "allowed_ips": "*",
+      "rate_limit": 100,
+      "permissions": "all",
+      "usage_count": 4,
+      "last_used": "2026-07-18T12:05:15.747Z",
+      "status": "active",
+      "created_at": "2026-07-18T12:05:15.730Z",
+      "updated_at": "2026-07-18T12:05:15.730Z"
+    }
+  ],
+  "webhooks": [
+    {
+      "id": "e1ea3610-a9fe-4cbc-992f-09431dea42aa",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "url": "https://example.com/webhook",
+      "secret": "696a63485238ef652ea131a6171fdf92bf0ed3d0a1bb7cfe",
+      "allowed_ips": "*",
+      "retry_count": 3,
+      "status": "active",
+      "created_at": "2026-07-18T12:05:15.757Z",
+      "updated_at": "2026-07-18T12:05:15.757Z"
+    }
+  ],
+  "webhook_deliveries": [],
+  "sms_queue": [
+    {
+      "id": "f29f91bf-debb-4404-ac36-49300c39ba0b",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "device_id": "206bb74f-6692-435f-9936-0f650b63b3da",
+      "phone_number": "9876543210",
+      "message": "Test message",
+      "sim_slot": 1,
+      "priority": 0,
+      "webhook_url": null,
+      "metadata": {},
+      "status": "completed",
+      "retry_count": 0,
+      "max_retries": 3,
+      "error": null,
+      "source_ip": "::ffff:127.0.0.1",
+      "country": null,
+      "api_key_id": "765a86cc-52de-4d48-b260-5fc4da6232dd",
+      "request_id": "16a0415a-3a92-42ed-a170-0cada2a796df",
+      "sent_at": "2026-07-18T12:05:15.748Z",
+      "delivered_at": "2026-07-18T12:05:15.748Z",
+      "created_at": "2026-07-18T12:05:15.738Z",
+      "updated_at": "2026-07-18T12:05:15.748Z"
+    },
+    {
+      "id": "663eb1ac-90e7-4c1f-8249-f97119477fe5",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "device_id": "206bb74f-6692-435f-9936-0f650b63b3da",
+      "phone_number": "9876543211",
+      "message": "Panel test",
+      "sim_slot": 1,
+      "priority": 0,
+      "webhook_url": null,
+      "metadata": {},
+      "status": "pending",
+      "retry_count": 0,
+      "max_retries": 3,
+      "error": null,
+      "source_ip": "::ffff:127.0.0.1",
+      "country": null,
+      "api_key_id": null,
+      "request_id": "476656f5-6c5f-4081-8336-7c76bb65dd17",
+      "sent_at": null,
+      "delivered_at": null,
+      "created_at": "2026-07-18T12:05:15.752Z",
+      "updated_at": "2026-07-18T12:05:15.752Z"
+    }
+  ],
+  "sms_history": [
+    {
+      "id": "49368792-dab5-47c4-ac9e-39d20594bc6e",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "device_id": "206bb74f-6692-435f-9936-0f650b63b3da",
+      "phone_number": "9876543210",
+      "message": "Test message",
+      "sim_slot": 1,
+      "status": "completed",
+      "error": null,
+      "duration": null,
+      "request_id": "16a0415a-3a92-42ed-a170-0cada2a796df",
+      "api_key_id": "765a86cc-52de-4d48-b260-5fc4da6232dd",
+      "sent_at": "2026-07-18T12:05:15.748Z"
+    },
+    {
+      "id": "14bda4d2-77c2-4e82-a413-67f414dd361a",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "device_id": "206bb74f-6692-435f-9936-0f650b63b3da",
+      "phone_number": "9876543211",
+      "message": "Panel test",
+      "sim_slot": 1,
+      "status": "pending",
+      "error": null,
+      "duration": null,
+      "request_id": "476656f5-6c5f-4081-8336-7c76bb65dd17",
+      "api_key_id": null,
+      "sent_at": "2026-07-18T12:05:15.752Z"
+    }
+  ],
+  "logs": [
+    {
+      "id": "981f894f-0cb8-4c76-bc9d-4943b8af627a",
+      "created_at": "2026-07-18T12:05:15.752Z",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "action": "sms_queued",
+      "details": {
+        "request_id": "476656f5-6c5f-4081-8336-7c76bb65dd17",
+        "phone_number": "9876543211"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "user_agent": "",
+      "status": "success",
+      "request_id": "476656f5-6c5f-4081-8336-7c76bb65dd17",
+      "duration": null
+    },
+    {
+      "id": "8317db89-f50d-4af9-aeaf-2c6bfa8bb63f",
+      "created_at": "2026-07-18T12:05:15.748Z",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "action": "sms_sent",
+      "details": {
+        "request_id": "16a0415a-3a92-42ed-a170-0cada2a796df",
+        "phone_number": "9876543210"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "user_agent": "",
+      "status": "success",
+      "request_id": "16a0415a-3a92-42ed-a170-0cada2a796df",
+      "duration": null
+    },
+    {
+      "id": "67a097bb-92f2-446a-b5c8-5f3d7fd41ea3",
+      "created_at": "2026-07-18T12:05:15.738Z",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "action": "sms_queued",
+      "details": {
+        "request_id": "16a0415a-3a92-42ed-a170-0cada2a796df",
+        "phone_number": "9876543210"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "user_agent": "",
+      "status": "success",
+      "request_id": "16a0415a-3a92-42ed-a170-0cada2a796df",
+      "duration": null
+    },
+    {
+      "id": "b77f4bdc-0d50-4f92-98aa-4fe4deffe999",
+      "created_at": "2026-07-18T12:05:15.733Z",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "action": "device_connected",
+      "details": {
+        "device_id": "206bb74f-6692-435f-9936-0f650b63b3da"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "user_agent": "",
+      "status": "success",
+      "request_id": null,
+      "duration": null
+    },
+    {
+      "id": "d7123637-ba4f-40af-b645-5e5cb66b9d03",
+      "created_at": "2026-07-18T12:05:15.730Z",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "action": "apikey_created",
+      "details": {
+        "name": "Test Key"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "user_agent": "",
+      "status": "success",
+      "request_id": null,
+      "duration": null
+    },
+    {
+      "id": "f439d8ae-c29d-480c-88d6-61da0ed84bb0",
+      "created_at": "2026-07-18T12:05:15.722Z",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "action": "user_registered",
+      "details": {
+        "email": "test_1784376315340@xd.test",
+        "name": "Test User"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "country": null,
+      "user_agent": "",
+      "status": "success",
+      "request_id": null,
+      "duration": null
+    }
+  ],
+  "settings": [
+    {
+      "id": "d7c8eb72-db0a-4846-a398-6f908d411619",
+      "user_id": "c651b9be-aa2b-44d3-b910-40fffad994b2",
+      "timezone": "UTC",
+      "language": "en",
+      "theme": "system",
+      "notifications_enabled": true,
+      "created_at": "2026-07-18T12:05:15.718Z",
+      "updated_at": "2026-07-18T12:05:15.718Z"
+    }
+  ],
+  "gateway_state": {
+    "c651b9be-aa2b-44d3-b910-40fffad994b2": {
+      "paused": false,
+      "updated_at": "2026-07-18T12:05:15.718Z"
+    }
+  }
+}

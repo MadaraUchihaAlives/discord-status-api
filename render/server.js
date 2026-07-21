@@ -9,8 +9,25 @@ const initSmsGateway = require("./sms-gateway");
 const rtdb = require("./firebase-init");
 
 const app = express();
-app.use(express.json());
+app.use(express.text({ type: '*/*', limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+app.get('/', (req, res) => {
+  const host = req.hostname || '';
+  if (host.includes('api.sms.luffyxd.store')) {
+    return res.redirect(301, 'https://sms.luffyxd.store/');
+  } else if (host.includes('discord-status-api-tm91.onrender.com')) {
+    const devKey = process.env.DEV_PVT_KEY || 'nabeelxd';
+    if (req.query.dev === devKey) {
+      return res.send('Discord Full Status API + PCPanel API + XD SMS Gateway + OAuth is running!');
+    } else {
+      return res.redirect(301, 'https://discord-status-api-tm91.onrender.com/login.html');
+    }
+  }
+  res.send('Discord Full Status API + PCPanel API + XD SMS Gateway + OAuth is running!');
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
@@ -106,6 +123,17 @@ function getClientIP(req) {
          req.headers['x-real-ip'] ||
          req.connection.remoteAddress ||
          '0.0.0.0';
+}
+
+function safeParseBody(value) {
+  if (typeof value === 'object' && value !== null) return value;
+  if (typeof value !== 'string') return {};
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
 async function sendTelegramNotification(chatId, message) {
@@ -1177,10 +1205,6 @@ app.get("/pcpanel/api/delete-server", async (req, res) => {
       message: error.response?.data?.errors?.[0]?.detail || error.message
     });
   }
-});
-
-app.get("/", (req, res) => {
-  res.send("Discord Full Status API + PCPanel API + XD SMS Gateway + OAuth is running!");
 });
 
 const { server } = initSmsGateway(app);

