@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Docs - XD SMS Gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js"></script>
+</head>
+<body>
+<div class="docs-shell">
+
+  
+  <aside class="docs-sidebar" id="docsSidebar">
+    <div class="docs-sidebar-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <a href="index.html" class="logo">XD SMS <span>Gateway</span></a>
+        <button class="theme-toggle" data-theme-toggle type="button" style="width:32px;height:32px;font-size:13px;"><svg data-theme-icon-sun width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><svg data-theme-icon-moon width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);">API Reference</div>
+    </div>
+    <nav class="docs-nav">
+      <div class="docs-nav-label">Getting started</div>
+      <a href="#overview" onclick="nav(this)">Overview</a>
+      <a href="#auth-guide" onclick="nav(this)">Authentication</a>
+      <a href="#errors" onclick="nav(this)">Error handling</a>
+      <a href="#testing" onclick="nav(this)">Testing guide</a>
+
+      <div class="docs-nav-label">Authentication</div>
+      <a href="#auth-register" onclick="nav(this)">Register</a>
+      <a href="#auth-login" onclick="nav(this)">Login</a>
+      <a href="#auth-logout" onclick="nav(this)">Logout</a>
+      <a href="#auth-me" onclick="nav(this)">Get current user</a>
+
+      <div class="docs-nav-label">Dashboard</div>
+      <a href="#dashboard" onclick="nav(this)">Dashboard stats</a>
+      <a href="#statistics" onclick="nav(this)">Statistics</a>
+
+      <div class="docs-nav-label">SMS</div>
+      <a href="#sms-send" onclick="nav(this)">Send SMS</a>
+      <a href="#sms-send-bulk" onclick="nav(this)">Bulk send</a>
+      <a href="#sms-status" onclick="nav(this)">SMS status</a>
+      <a href="#sms-history" onclick="nav(this)">History</a>
+      <a href="#sms-logs" onclick="nav(this)">Logs</a>
+
+      <div class="docs-nav-label">Android gateway</div>
+      <a href="#android" onclick="nav(this)">Integration guide</a>
+      <a href="#device-connect" onclick="nav(this)">Connect device</a>
+      <a href="#device-update" onclick="nav(this)">Update device</a>
+      <a href="#device-get" onclick="nav(this)">Poll queue (GET)</a>
+      <a href="#device-done" onclick="nav(this)">Report delivery</a>
+
+      <div class="docs-nav-label">Devices</div>
+      <a href="#devices-list" onclick="nav(this)">List devices</a>
+      <a href="#device-control" onclick="nav(this)">Pause / resume / delete</a>
+
+      <div class="docs-nav-label">Queue</div>
+      <a href="#queue" onclick="nav(this)">View queue</a>
+      <a href="#queue-control" onclick="nav(this)">Cancel / retry / clear</a>
+
+      <div class="docs-nav-label">API Keys</div>
+      <a href="#apikeys-list" onclick="nav(this)">List keys</a>
+      <a href="#apikeys-create" onclick="nav(this)">Create key</a>
+      <a href="#apikeys-manage" onclick="nav(this)">Delete / toggle / regen</a>
+
+      <div class="docs-nav-label">Webhooks</div>
+      <a href="#webhooks-ref" onclick="nav(this)">Webhook guide</a>
+      <a href="#webhooks-list" onclick="nav(this)">List webhooks</a>
+      <a href="#webhooks-create" onclick="nav(this)">Create webhook</a>
+      <a href="#webhooks-manage" onclick="nav(this)">Manage webhooks</a>
+
+      <div class="docs-nav-label">Settings</div>
+      <a href="#settings" onclick="nav(this)">Get settings</a>
+      <a href="#gateway-control" onclick="nav(this)">Gateway pause/resume</a>
+      <a href="#settings-update" onclick="nav(this)">Update preferences</a>
+
+      <div class="docs-nav-label">Utility</div>
+      <a href="#ping" onclick="nav(this)">Ping</a>
+    </nav>
+    <div style="padding:16px 20px;border-top:1px solid var(--border);margin-top:12px;">
+      <a href="login.html" class="btn btn-primary btn-sm" style="width:100%;margin-bottom:8px;display:flex;">Dashboard →</a>
+       <a href="index.html" style="font-size:12px;color:var(--text-muted);">← Back to home</a>
+    </div>
+  </aside>
+
+  
+  <main class="docs-main">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
+      <button class="btn btn-secondary btn-sm" id="docsMenuBtn" style="display:none;" type="button">☰ Menu</button>
+    </div>
+
+    
+    <section class="docs-section" id="overview">
+      <h1 class="docs-section-title">XD SMS Gateway API</h1>
+      <p class="docs-section-desc">A full REST + WebSocket API for sending SMS messages through your Android phone. Build integrations, trigger messages from any backend, and monitor delivery in real time.</p>
+
+      <div class="overview-grid">
+        <div class="overview-box">
+          <h4>Base URL</h4>
+          <p style="font-family:monospace;font-size:13px;margin-top:6px;">/smsapi/v1</p>
+        </div>
+        <div class="overview-box">
+          <h4>Response format</h4>
+          <p>All responses are JSON. Errors include an <code style="font-family:monospace;font-size:12px;">error</code> field.</p>
+        </div>
+        <div class="overview-box">
+          <h4>Auth: Bearer token</h4>
+          <p>Dashboard + user actions. Obtained via login. Header: <code style="font-family:monospace;font-size:12px;">Authorization: Bearer &lt;token&gt;</code></p>
+        </div>
+        <div class="overview-box">
+          <h4>Auth: API key</h4>
+          <p>For integrations and Android app. Header: <code style="font-family:monospace;font-size:12px;">X-Api-Key: &lt;key&gt;</code></p>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="auth-guide">
+      <h2 class="docs-section-title">Authentication</h2>
+      <p class="docs-section-desc">XD SMS Gateway uses two authentication methods depending on the caller:</p>
+      <div style="overflow-x:auto;margin-bottom:24px;">
+        <table class="params-table">
+          <thead><tr><th>Method</th><th>Header</th><th>Used for</th></tr></thead>
+          <tbody>
+            <tr><td>Bearer token (JWT)</td><td><code style="font-family:monospace;">Authorization: Bearer &lt;token&gt;</code></td><td>Dashboard, user-level operations</td></tr>
+            <tr><td>API key</td><td><code style="font-family:monospace;">X-Api-Key: &lt;key&gt;</code></td><td>Sending SMS, Android app polling</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--text-secondary);font-size:14px;">Get your bearer token by calling <a href="#auth-login" style="color:var(--text);font-weight:500;">POST /api/auth/login</a>. Create API keys in the dashboard under <strong>API Keys</strong>.</p>
+    </section>
+
+    
+    <section class="docs-section" id="errors">
+      <h2 class="docs-section-title">Error handling</h2>
+      <p class="docs-section-desc">All errors return a JSON body with an <code style="font-family:monospace;">error</code> string and appropriate HTTP status.</p>
+      <div class="code-wrap">
+        <div class="code-block-docs">// Example error response (HTTP 401)
+{
+  "error": "Invalid token"
+}
+
+// Example validation error (HTTP 400)
+{
+  "error": "Phone number and message required"
+}</div>
+      </div>
+      <div style="overflow-x:auto;margin-top:20px;">
+        <table class="params-table">
+          <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>200</td><td>Success</td></tr>
+            <tr><td>201</td><td>Created</td></tr>
+            <tr><td>400</td><td>Bad request — missing or invalid parameters</td></tr>
+            <tr><td>401</td><td>Unauthorized — invalid or missing token/key</td></tr>
+            <tr><td>403</td><td>Forbidden — IP not allowed</td></tr>
+            <tr><td>404</td><td>Not found</td></tr>
+            <tr><td>500</td><td>Server error</td></tr>
+            <tr><td>503</td><td>Gateway paused</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="testing">
+      <h2 class="docs-section-title">Testing guide</h2>
+      <p class="docs-section-desc">Follow this flow to test the full SMS pipeline end-to-end without an Android device.</p>
+      <div style="display:grid;gap:20px;">
+        <div class="overview-box">
+          <h4>Step 1 — Register & get a token</h4>
+          <p>Call <code style="font-family:monospace;">POST /api/auth/register</code> with name, email, password. Save the returned <code style="font-family:monospace;">token</code>.</p>
+        </div>
+        <div class="overview-box">
+          <h4>Step 2 — Create an API key</h4>
+          <p>Call <code style="font-family:monospace;">POST /api/apikey/create</code> with Bearer token. Save the full <code style="font-family:monospace;">key</code> shown once.</p>
+        </div>
+        <div class="overview-box">
+          <h4>Step 3 — Queue an SMS</h4>
+          <p>Call <code style="font-family:monospace;">POST /api/sms/send</code> with <code style="font-family:monospace;">X-Api-Key</code>. Note the <code style="font-family:monospace;">request_id</code>.</p>
+        </div>
+        <div class="overview-box">
+          <h4>Step 4 — Simulate the Android app polling</h4>
+          <p>Call <code style="font-family:monospace;">GET /api/get</code> with <code style="font-family:monospace;">X-Api-Key</code>. You'll receive the queued message.</p>
+        </div>
+        <div class="overview-box">
+          <h4>Step 5 — Report delivery</h4>
+          <p>Call <code style="font-family:monospace;">POST /api/done</code> with the <code style="font-family:monospace;">id</code> and <code style="font-family:monospace;">status: "sent"</code> to mark it complete.</p>
+        </div>
+        <div class="overview-box">
+          <h4>Step 6 — Check history</h4>
+          <p>Call <code style="font-family:monospace;">GET /api/sms/status/&lt;request_id&gt;</code> to confirm the status is <code style="font-family:monospace;">completed</code>.</p>
+        </div>
+      </div>
+      <div style="margin-top:24px;">
+        <div class="api-section-label">curl example — full test flow</div>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs"># 1. Register
+curl -X POST https://api.sms.luffyxd.store/smsapi/v1/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com","password":"secret123"}'
+
+# 2. Login (save the token)
+TOKEN=$(curl -s -X POST https://api.sms.luffyxd.store/smsapi/v1/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"secret123"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+
+# 3. Create API key (save the key)
+APIKEY=$(curl -s -X POST https://api.sms.luffyxd.store/smsapi/v1/api/apikey/create \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Key"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['key'])")
+
+# 4. Queue an SMS
+curl -X POST https://api.sms.luffyxd.store/smsapi/v1/api/sms/send \
+  -H "X-Api-Key: $APIKEY" \
+  -H "Content-Type: application/json" \
+  -d '{"phone_number":"+9876543210","message":"Hello from API!"}'
+
+# 5. Poll (simulate Android app)
+curl -H "X-Api-Key: $APIKEY" https://api.sms.luffyxd.store/smsapi/v1/api/get
+
+# 6. Report delivery (use id from step 5)
+curl -X POST https://api.sms.luffyxd.store/smsapi/v1/api/done \
+  -H "X-Api-Key: $APIKEY" \
+  -H "Content-Type: application/json" \
+  -d '{"id":"QUEUE_ITEM_ID","status":"sent"}'</div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="auth-register">
+      <h2 class="docs-section-title">Register</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/register</span>
+        </div>
+        <p class="endpoint-desc">Create a new user account. Returns a JWT token valid for 7 days.</p>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>name<span class="param-required">*</span></td><td>string</td><td>Display name</td></tr>
+            <tr><td>email<span class="param-required">*</span></td><td>string</td><td>Unique email address</td></tr>
+            <tr><td>password<span class="param-required">*</span></td><td>string</td><td>Min. 8 characters</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">// Request
+POST /api/auth/register
+Content-Type: application/json
+
+{ "name": "Nabeel", "email": "nabeel@example.com", "password": "secret123" }
+
+// Response 201
+{
+  "user": { "id": "uuid", "email": "nabeel@example.com", "name": "Nabeel", "role": "user" },
+  "token": "eyJhbGci..."
+}</div>
+        </div>
+        <div class="try-it" data-method="POST" data-path="/api/auth/register">
+          <div class="try-it-header" onclick="toggleTry(this)"><span>▶ Try it</span><span style="font-size:12px;color:var(--text-muted);">Live tester</span></div>
+          <div class="try-it-body">
+            <div class="try-it-fields">
+              <div class="try-it-field"><label>name</label><input type="text" value="Test User" data-key="name"></div>
+              <div class="try-it-field"><label>email</label><input type="email" value="test@example.com" data-key="email"></div>
+              <div class="try-it-field"><label>password</label><input type="password" value="secret123" data-key="password"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="runTry(this)">Send request</button>
+            <div class="try-it-response"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="auth-login">
+      <h2 class="docs-section-title">Login</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/login</span>
+        </div>
+        <p class="endpoint-desc">Authenticate with email and password. Returns a JWT token.</p>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>email<span class="param-required">*</span></td><td>string</td><td>Registered email</td></tr>
+            <tr><td>password<span class="param-required">*</span></td><td>string</td><td>Account password</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">// Request
+POST /api/auth/login
+Content-Type: application/json
+
+{ "email": "nabeel@example.com", "password": "secret123" }
+
+// Response 200
+{ "user": { "id": "uuid", "email": "nabeel@example.com", "name": "Nabeel" }, "token": "eyJhbGci..." }</div>
+        </div>
+        <div class="try-it" data-method="POST" data-path="/api/auth/login">
+          <div class="try-it-header" onclick="toggleTry(this)"><span>▶ Try it</span><span style="font-size:12px;color:var(--text-muted);">Live tester</span></div>
+          <div class="try-it-body">
+            <div class="try-it-fields">
+              <div class="try-it-field"><label>email</label><input type="email" value="" data-key="email" placeholder="your@email.com"></div>
+              <div class="try-it-field"><label>password</label><input type="password" value="" data-key="password" placeholder="••••••••"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="runTry(this)">Send request</button>
+            <div class="try-it-response"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="auth-logout">
+      <h2 class="docs-section-title">Logout</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/logout</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <p class="endpoint-desc">Invalidates the current session token.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/auth/logout
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{ "message": "Logged out" }</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="auth-me">
+      <h2 class="docs-section-title">Get current user</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/auth/me</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <p class="endpoint-desc">Returns the authenticated user's profile.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/auth/me
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{ "user": { "id": "uuid", "email": "nabeel@example.com", "name": "Nabeel", "role": "user", "created_at": "..." } }</div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="dashboard">
+      <h2 class="docs-section-title">Dashboard stats</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/dashboard</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <p class="endpoint-desc">Returns a summary of gateway status, device count, queue counts, and primary device info.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">// Response 200
+{
+  "gatewayStatus": { "online": true, "paused": false, "totalDevices": 1, "onlineCount": 1 },
+  "connectedDevices": 1,
+  "onlineDevices": 1,
+  "todayRequests": 42,
+  "totalRequests": 200,
+  "pendingQueue": 3,
+  "completedQueue": 195,
+  "failedQueue": 2,
+  "primaryDevice": { "id": "...", "device_name": "Pixel 7", "battery": 85, "status": "online" }
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="statistics">
+      <h2 class="docs-section-title">Statistics</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/statistics</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <p class="endpoint-desc">Returns send/fail/pending counts and success rate for a given period.</p>
+        <table class="params-table"><thead><tr><th>Query param</th><th>Values</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>period</td><td>today · yesterday · 7days · 30days · all</td><td>Defaults to today</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/statistics?period=7days
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{ "total_sent": 150, "total_failed": 5, "total_pending": 2, "success_rate": 96.8, "total_requests": 157 }</div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="sms-send">
+      <h2 class="docs-section-title">Send SMS</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/sms/send</span>
+          <span class="auth-type">API key</span>
+        </div>
+        <p class="endpoint-desc">Queue a single SMS message. The message is picked up by the connected Android device on its next poll.</p>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>phone_number<span class="param-required">*</span></td><td>string</td><td>Recipient phone number (with country code)</td></tr>
+            <tr><td>message<span class="param-required">*</span></td><td>string</td><td>SMS content</td></tr>
+            <tr><td>device_id</td><td>string</td><td>Target a specific device (optional, omit for auto)</td></tr>
+            <tr><td>sim_slot</td><td>number</td><td>SIM slot to use: 1 or 2 (default: 1)</td></tr>
+            <tr><td>priority</td><td>number</td><td>Higher = processed first (default: 0)</td></tr>
+            <tr><td>webhook_url</td><td>string</td><td>One-off callback URL for this message</td></tr>
+            <tr><td>metadata</td><td>object</td><td>Arbitrary key-value data passed through</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/sms/send
+X-Api-Key: YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "phone_number": "+9876543210",
+  "message": "Your OTP is 482910. Valid for 5 minutes.",
+  "device_id": "device-uuid",
+  "sim_slot": 1,
+  "priority": 5,
+  "metadata": { "user_id": "abc123" }
+}
+
+// Response 200
+{
+  "request_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "pending",
+  "message": "SMS queued",
+  "id": "queue-item-uuid"
+}</div>
+        </div>
+        <div class="try-it" data-method="POST" data-path="/api/sms/send" data-auth="apikey">
+          <div class="try-it-header" onclick="toggleTry(this)"><span>▶ Try it</span><span style="font-size:12px;color:var(--text-muted);">Live tester</span></div>
+          <div class="try-it-body">
+            <div class="try-it-fields">
+              <div class="try-it-field"><label>X-Api-Key</label><input type="text" data-header="X-Api-Key" placeholder="Your API key"></div>
+              <div class="try-it-field"><label>phone_number</label><input type="text" data-key="phone_number" value="+9876543210"></div>
+              <div class="try-it-field"><label>message</label><textarea data-key="message">Hello from XD SMS Gateway!</textarea></div>
+              <div class="try-it-field"><label>sim_slot</label><input type="number" data-key="sim_slot" value="1" min="1" max="2"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="runTry(this)">Send request</button>
+            <div class="try-it-response"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="sms-send-bulk">
+      <h2 class="docs-section-title">Bulk send</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/sms/send-bulk</span>
+          <span class="auth-type">API key</span>
+        </div>
+        <p class="endpoint-desc">Queue multiple messages in one request. Each message gets its own <code style="font-family:monospace;">request_id</code>.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/sms/send-bulk
+X-Api-Key: YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "messages": [
+    { "phone_number": "+111", "message": "Hi Alice!" },
+    { "phone_number": "+222", "message": "Hi Bob!", "sim_slot": 2 },
+    { "phone_number": "+333", "message": "Hi Carol!", "priority": 10 }
+  ]
+}
+
+// Response 200
+{
+  "results": [
+    { "request_id": "uuid-1", "phone_number": "+111", "status": "pending", "id": "q-id-1" },
+    { "request_id": "uuid-2", "phone_number": "+222", "status": "pending", "id": "q-id-2" },
+    { "request_id": "uuid-3", "phone_number": "+333", "status": "pending", "id": "q-id-3" }
+  ]
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="sms-status">
+      <h2 class="docs-section-title">SMS status</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/sms/status/:requestId</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <p class="endpoint-desc">Check delivery status by the <code style="font-family:monospace;">request_id</code> returned when queuing.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/sms/status/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{
+  "request_id": "550e8400-...",
+  "status": "completed",
+  "phone_number": "+9876543210",
+  "created_at": "2026-07-19T12:00:00.000Z",
+  "sent_at": "2026-07-19T12:00:05.000Z",
+  "delivered_at": "2026-07-19T12:00:05.000Z",
+  "error": null
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="sms-history">
+      <h2 class="docs-section-title">SMS history</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/sms/history</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <p class="endpoint-desc">Returns the last 100 messages sent by this account.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/sms/history
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{
+  "history": [
+    { "id": "uuid", "phone_number": "+9876543210", "message": "...", "status": "completed", "sent_at": "..." },
+    ...
+  ]
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="sms-logs">
+      <h2 class="docs-section-title">SMS logs (paginated)</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/sms/logs</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <table class="params-table"><thead><tr><th>Query param</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>page</td><td>1</td><td>Page number</td></tr>
+            <tr><td>limit</td><td>20</td><td>Records per page</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/sms/logs?page=1&limit=20
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{ "logs": [ ... ], "total": 200, "page": 1 }</div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="android">
+      <h2 class="docs-section-title">Android integration guide</h2>
+      <p class="docs-section-desc">The Android gateway app polls the API for queued messages, sends them via the SIM, and reports delivery back. Here's the full loop:</p>
+      <div style="display:grid;gap:16px;margin-bottom:24px;">
+        <div class="overview-box"><h4>1. Connect on startup</h4><p>Call <code style="font-family:monospace;">POST /api/device/connect</code> to register the device and report hardware info.</p></div>
+        <div class="overview-box"><h4>2. Poll for messages</h4><p>Every few seconds, call <code style="font-family:monospace;">GET /api/get</code>. If <code style="font-family:monospace;">success: true</code>, a message is waiting.</p></div>
+        <div class="overview-box"><h4>3. Send via SIM</h4><p>Use Android's <code style="font-family:monospace;">SmsManager.sendTextMessage()</code> with the <code style="font-family:monospace;">phone_number</code> and <code style="font-family:monospace;">message</code> fields.</p></div>
+        <div class="overview-box"><h4>4. Report result</h4><p>Call <code style="font-family:monospace;">POST /api/done</code> with the message <code style="font-family:monospace;">id</code> and <code style="font-family:monospace;">status: "sent"</code> or <code style="font-family:monospace;">"failed"</code>.</p></div>
+        <div class="overview-box"><h4>5. Send heartbeat</h4><p>Call <code style="font-family:monospace;">POST /api/device/update</code> with battery, RAM, network info every 30 s.</p></div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="device-connect">
+      <h2 class="docs-section-title">Connect device</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/device/connect</span>
+          <span class="auth-type">API key</span>
+        </div>
+        <p class="endpoint-desc">Register or re-register an Android device. Returns the <code style="font-family:monospace;">device_id</code> to pass in subsequent requests.</p>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>device_id</td><td>string</td><td>UUID from previous registration (omit to create new)</td></tr>
+            <tr><td>device_name</td><td>string</td><td>Human-readable name</td></tr>
+            <tr><td>gateway_name</td><td>string</td><td>App instance name</td></tr>
+            <tr><td>android_version</td><td>string</td><td>e.g. "13"</td></tr>
+            <tr><td>phone_model</td><td>string</td><td>e.g. "Pixel 7"</td></tr>
+            <tr><td>battery</td><td>number</td><td>0–100</td></tr>
+            <tr><td>carrier</td><td>string</td><td>Carrier name</td></tr>
+            <tr><td>sim_number</td><td>string</td><td>SIM phone number</td></tr>
+            <tr><td>network_type</td><td>string</td><td>e.g. "LTE", "5G"</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/device/connect
+X-Api-Key: YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "device_name": "Pixel 7 Pro",
+  "android_version": "14",
+  "phone_model": "Pixel 7 Pro",
+  "battery": 82,
+  "carrier": "Airtel",
+  "sim_number": "+919876543210",
+  "network_type": "5G"
+}
+
+// Response 200
+{ "device_id": "uuid", "status": "connected", "device": { ... } }</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="device-update">
+      <h2 class="docs-section-title">Update device (heartbeat)</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/device/update</span>
+          <span class="auth-type">API key</span>
+        </div>
+        <p class="endpoint-desc">Update device telemetry. Call every 30 seconds to keep the device marked online.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/device/update
+X-Api-Key: YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "device_id": "uuid",
+  "battery": 79,
+  "charging": false,
+  "ram_usage": 62,
+  "cpu_usage": 8,
+  "network_type": "LTE"
+}
+
+// Response 200
+{ "device": { ... } }</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="device-get">
+      <h2 class="docs-section-title">Poll queue (GET)</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/get</span>
+          <span class="auth-type">API key</span>
+        </div>
+        <p class="endpoint-desc">Fetch the next pending message for this API key's account. Returns <code style="font-family:monospace;">success: false</code> when the queue is empty.</p>
+        <table class="params-table"><thead><tr><th>Query param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td>device_id</td><td>string</td><td>Filter messages for a specific device (optional)</td></tr></tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/get
+X-Api-Key: YOUR_API_KEY
+
+// Response — message ready
+{
+  "success": true,
+  "id": "queue-item-uuid",
+  "request_id": "550e8400-...",
+  "phone_number": "+9876543210",
+  "message": "Your OTP is 482910",
+  "sim_slot": 1
+}
+
+// Response — queue empty
+{ "success": false }</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="device-done">
+      <h2 class="docs-section-title">Report delivery</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/done</span>
+          <span class="auth-type">API key</span>
+        </div>
+        <p class="endpoint-desc">Report the result of sending a message. Must be called after every <code style="font-family:monospace;">GET /api/get</code> response.</p>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>id<span class="param-required">*</span></td><td>string</td><td>Queue item ID from <code style="font-family:monospace;">/api/get</code></td></tr>
+            <tr><td>status<span class="param-required">*</span></td><td>string</td><td><code style="font-family:monospace;">sent</code> · <code style="font-family:monospace;">delivered</code> · <code style="font-family:monospace;">failed</code></td></tr>
+            <tr><td>error</td><td>string</td><td>Error message when status is failed</td></tr>
+            <tr><td>device_id</td><td>string</td><td>ID of the device that sent it</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/done
+X-Api-Key: YOUR_API_KEY
+Content-Type: application/json
+
+{ "id": "queue-item-uuid", "status": "sent", "device_id": "device-uuid" }
+
+// Response 200
+{ "success": true, "request_id": "550e8400-...", "status": "completed" }</div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="devices-list">
+      <h2 class="docs-section-title">List devices</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/devices</span>
+          <span class="auth-type">Bearer token</span>
+        </div>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/devices
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{
+  "devices": [
+    {
+      "id": "uuid", "device_name": "Pixel 7", "phone_model": "Pixel 7 Pro",
+      "battery": 80, "status": "online", "carrier": "Airtel",
+      "network_type": "5G", "last_seen": "2026-07-19T..."
+    }
+  ]
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="device-control">
+      <h2 class="docs-section-title">Device control</h2>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/device/:id/pause</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Mark a device as paused — it will not be assigned new messages.</p>
+      </div>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/device/:id/resume</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Return a paused device to online status.</p>
+      </div>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/device/:id/rename</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Rename a device. Body: <code style="font-family:monospace;">{"device_name":"New Name"}</code></p>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/device/:id/delete</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Permanently remove a device record.</p>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="queue">
+      <h2 class="docs-section-title">View queue</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><span class="endpoint-path">/api/queue</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Returns the top 100 queue items (sorted by priority desc, then created_at asc).</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/queue
+Authorization: Bearer &lt;token&gt;
+
+// Response 200
+{
+  "queue": [
+    { "id": "...", "phone_number": "+9876543210", "message": "...", "status": "pending", "priority": 5, "created_at": "..." }
+  ]
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="queue-control">
+      <h2 class="docs-section-title">Queue control</h2>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/queue/:id/cancel</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Cancel a pending queue item. Status becomes <code style="font-family:monospace;">cancelled</code>.</p>
+      </div>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/queue/:id/retry</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Requeue a failed item — resets retry count and status to pending.</p>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/queue/clear</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Remove all pending, failed, and cancelled items from the queue.</p>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="apikeys-list">
+      <h2 class="docs-section-title">List API keys</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><span class="endpoint-path">/api/apikeys</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Returns all API keys for the account. Full key values are never returned after creation.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">// Response 200
+{
+  "api_keys": [
+    { "id": "uuid", "name": "My Key", "masked_key": "abcd1234...efgh5678", "usage_count": 42, "status": "active", "last_used": "..." }
+  ]
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="apikeys-create">
+      <h2 class="docs-section-title">Create API key</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/apikey/create</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Creates a new API key. The full key is shown once — store it immediately.</p>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>name<span class="param-required">*</span></td><td>string</td><td>Label for this key</td></tr>
+            <tr><td>allowed_ips</td><td>string</td><td>Comma-separated IPs, or <code style="font-family:monospace;">*</code> for any (default)</td></tr>
+            <tr><td>rate_limit</td><td>number</td><td>Max requests per minute (default: 100)</td></tr>
+          </tbody>
+        </table>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/apikey/create
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{ "name": "Production Key", "allowed_ips": "*" }
+
+// Response 200
+{ "id": "uuid", "key": "FULL_KEY_SHOWN_ONCE", "name": "Production Key", "masked_key": "..." }</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="apikeys-manage">
+      <h2 class="docs-section-title">Manage API keys</h2>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/apikey/:id/toggle</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Toggle a key between active and disabled.</p>
+      </div>
+      <div class="endpoint" style="margin-bottom:24px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/apikey/:id/regenerate</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Generate a new random value for this key. The new full key is returned once.</p>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/apikey/:id/delete</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Permanently delete an API key. Any requests using it will immediately fail.</p>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="webhooks-ref">
+      <h2 class="docs-section-title">Webhook guide</h2>
+      <p class="docs-section-desc">Webhooks deliver signed POST requests to your URL on every SMS event. Each payload includes <code style="font-family:monospace;">X-Webhook-Signature</code> (HMAC-SHA256) and <code style="font-family:monospace;">X-Webhook-Event</code> headers.</p>
+      <div style="margin-bottom:20px;">
+        <div class="api-section-label">Verify signature (Node.js)</div>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">const crypto = require('crypto');
+
+function verifyWebhook(body, secret, signature) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(body) // raw body string
+    .digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}</div>
+        </div>
+      </div>
+      <div class="api-section-label">Event types</div>
+      <table class="params-table"><thead><tr><th>Event</th><th>When fired</th></tr></thead>
+        <tbody>
+          <tr><td>sms.queued</td><td>Message added to queue</td></tr>
+          <tr><td>sms.completed</td><td>Device reported successful delivery</td></tr>
+          <tr><td>sms.failed</td><td>Device reported failure</td></tr>
+          <tr><td>sms.cancelled</td><td>Message cancelled from queue</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="docs-section" id="webhooks-list">
+      <h2 class="docs-section-title">List webhooks</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><span class="endpoint-path">/api/webhooks</span><span class="auth-type">Bearer token</span></div>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">// Response 200
+{
+  "webhooks": [
+    { "id": "uuid", "url": "https://example.com/hook", "status": "active", "retry_count": 3, "created_at": "..." }
+  ]
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="webhooks-create">
+      <h2 class="docs-section-title">Create webhook</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/webhook/create</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Create a new webhook. The signing secret is shown once.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">POST /api/webhook/create
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{ "url": "https://yourapp.com/hooks/sms", "retry_count": 3 }
+
+// Response 200
+{ "id": "uuid", "url": "...", "secret": "SIGNING_SECRET_SHOWN_ONCE" }</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="webhooks-manage">
+      <h2 class="docs-section-title">Manage webhooks</h2>
+      <div class="endpoint" style="margin-bottom:20px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/webhook/:id/toggle</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Toggle a webhook between active and disabled.</p>
+      </div>
+      <div class="endpoint" style="margin-bottom:20px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/webhook/:id/rotate-secret</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Generate a new signing secret. Old secret is immediately invalidated.</p>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/webhook/:id/delete</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Delete the webhook permanently.</p>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="settings">
+      <h2 class="docs-section-title">Get settings</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-get">GET</span><span class="endpoint-path">/api/settings</span><span class="auth-type">Bearer token</span></div>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">// Response 200
+{
+  "settings": { "timezone": "UTC", "language": "en", "theme": "system", "notifications_enabled": true },
+  "gateway": { "paused": false, "updated_at": "..." }
+}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="docs-section" id="gateway-control">
+      <h2 class="docs-section-title">Gateway pause / resume</h2>
+      <div class="endpoint" style="margin-bottom:20px;">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/settings/gateway/pause</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Pause the gateway — no new messages will be queued or picked up by devices.</p>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/settings/gateway/resume</span><span class="auth-type">Bearer token</span></div>
+        <p class="endpoint-desc">Resume a paused gateway.</p>
+      </div>
+    </section>
+
+    <section class="docs-section" id="settings-update">
+      <h2 class="docs-section-title">Update preferences</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method-badge method-post">POST</span><span class="endpoint-path">/api/settings/update</span><span class="auth-type">Bearer token</span></div>
+        <table class="params-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>timezone</td><td>string</td><td>e.g. "Asia/Kolkata"</td></tr>
+            <tr><td>language</td><td>string</td><td>e.g. "en"</td></tr>
+            <tr><td>theme</td><td>string</td><td>system · light · dark</td></tr>
+            <tr><td>notifications_enabled</td><td>boolean</td><td>Enable activity notifications</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    
+    <section class="docs-section" id="ping">
+      <h2 class="docs-section-title">Ping</h2>
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/ping</span>
+        </div>
+        <p class="endpoint-desc">Health check. No authentication required.</p>
+        <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-block-docs">GET /api/ping
+
+// Response 200
+{ "status": "ok", "service": "XD SMS Gateway", "time": "2026-07-19T..." }</div>
+        </div>
+        <div class="try-it" data-method="GET" data-path="/api/ping" data-noauth="true">
+          <div class="try-it-header" onclick="toggleTry(this)"><span>▶ Try it</span><span style="font-size:12px;color:var(--text-muted);">Live tester</span></div>
+          <div class="try-it-body">
+            <button class="btn btn-primary btn-sm" onclick="runTry(this)">Send request</button>
+            <div class="try-it-response"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div style="border-top:1px solid var(--border);padding-top:32px;margin-top:32px;color:var(--text-muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <span>© 2026 TeamXD by NabeelXD</span>
+      <span>XD SMS Gateway API Reference</span>
+    </div>
+  </main>
+</div>
+
+<script>
+// Nav active state
+function nav(el) {
+  document.querySelectorAll('.docs-nav a').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Observe sections for auto-highlight
+const sections = document.querySelectorAll('.docs-section[id]');
+const navLinks = document.querySelectorAll('.docs-nav a');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => obs.observe(s));
+
+// Copy code
+function copyCode(btn) {
+  const code = btn.nextElementSibling.textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Toggle try-it panel
+function toggleTry(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+  header.querySelector('span:first-child').textContent = body.classList.contains('open') ? '▼ Try it' : '▶ Try it';
+}
+
+// Run try-it
+async function runTry(btn) {
+  const panel = btn.closest('.try-it');
+  const method = panel.dataset.method;
+  const path = panel.dataset.path;
+  const noAuth = panel.dataset.noauth === 'true';
+  const useApiKey = panel.dataset.auth === 'apikey';
+  const respEl = btn.nextElementSibling;
+  respEl.classList.add('visible');
+  respEl.innerHTML = '<div style="color:var(--text-muted)">Sending…</div>';
+
+  const BASE = window.XD_SMS?.API_BASE || '/smsapi/v1';
+  const headers = { 'Content-Type': 'application/json' };
+
+  // Collect custom headers from fields
+  panel.querySelectorAll('[data-header]').forEach(el => {
+    if (el.value) headers[el.dataset.header] = el.value;
+  });
+
+  // Default auth from localStorage if not provided
+  if (!noAuth && !useApiKey && !headers['Authorization']) {
+    const token = localStorage.getItem('xd_token');
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+  }
+
+  // Body
+  let body = undefined;
+  if (method !== 'GET') {
+    const bodyObj = {};
+    panel.querySelectorAll('[data-key]').forEach(el => {
+      let val = el.value;
+      if (el.type === 'number') val = Number(val);
+      bodyObj[el.dataset.key] = val;
+    });
+    if (Object.keys(bodyObj).length) body = JSON.stringify(bodyObj);
+  }
+
+  try {
+    const t0 = Date.now();
+    const res = await fetch(BASE + path, { method, headers, body });
+    const ms = Date.now() - t0;
+    let json;
+    try { json = await res.json(); } catch { json = null; }
+
+    const statusEl = document.createElement('div');
+    statusEl.className = 'try-it-status ' + (res.ok ? 'ok' : 'err');
+    statusEl.textContent = `HTTP ${res.status} ${res.statusText} — ${ms}ms`;
+    respEl.innerHTML = '';
+    respEl.appendChild(statusEl);
+    const pre = document.createElement('div');
+    pre.textContent = json ? JSON.stringify(json, null, 2) : '(no body)';
+    respEl.appendChild(pre);
+  } catch (err) {
+    respEl.innerHTML = `<div class="try-it-status err">Error: ${err.message}</div>`;
+  }
+}
+
+// Mobile menu
+const menuBtn = document.getElementById('docsMenuBtn');
+const sidebar = document.getElementById('docsSidebar');
+if (window.innerWidth <= 768) {
+  menuBtn.style.display = 'inline-flex';
+}
+menuBtn?.addEventListener('click', () => sidebar.classList.toggle('open'));
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    menuBtn.style.display = 'none';
+    sidebar.classList.remove('open');
+  } else {
+    menuBtn.style.display = 'inline-flex';
+  }
+});
+</script>
+</body>
+</html>
+
