@@ -9,6 +9,6 @@
 - `[x]` Add MySQL env vars (admin creds, DB connection details)
 - `[x]` Create `cpanel/api.php` (MySQL proxy for all data operations)
 - `[x]` Rewrite `render/sms-gateway/db.js` to use HTTPS proxy instead of Firebase RTDB
-- `[ ]` Push backend to GitHub `main` and verify Render deploy
-- `[ ]` Upload `cpanel/` frontend to `/home/simonsre/sms.luffyxd.store/`
-- `[ ]` Add docs hub and final docs cleanup
+- `[x]` Push backend to GitHub `main` and verify Render deploy
+- `[x]` Upload `cpanel/` frontend to `/home/simonsre/sms.luffyxd.store/`
+- `[x]` Add docs hub and final docs cleanup
