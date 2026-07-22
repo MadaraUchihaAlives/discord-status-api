@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
     if (req.query.dev === devKey) {
       return res.send('Discord Full Status API + PCPanel API + XD SMS Gateway + OAuth is running!');
     } else {
-      return res.redirect(301, 'https://discord-status-api-tm91.onrender.com/login.html');
+      return res.redirect(301, 'https://discord-status-api-tm91.onrender.com/login.php');
     }
   }
   res.send('Discord Full Status API + PCPanel API + XD SMS Gateway + OAuth is running!');

@@ -37,7 +37,7 @@ function findUserById(data, id) {
 
 function sanitizeUser(user) {
   if (!user) return null;
-  const { password, ...rest } = user;
+  const { password, password_hash, ...rest } = user;
   return rest;
 }
 

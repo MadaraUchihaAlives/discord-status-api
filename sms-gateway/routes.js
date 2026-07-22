@@ -330,10 +330,12 @@ function registerRoutes(app, io, jwtSecret) {
   app.post('/api/admin/login', async (req, res) => {
     try {
       const { username, password } = req.body;
-      
-      if (username === 'nabeelxd' && password === 'nabeelxd@123') {
+      const adminUser = process.env.ADMIN_USERNAME || 'nabeelxd';
+      const adminPass = process.env.ADMIN_PASSWORD || 'nabeelxd@123';
+
+      if (username === adminUser && password === adminPass) {
         const token = jwt.sign({ userId: 'admin', role: 'admin' }, jwtSecret, { expiresIn: '24h' });
-        
+
         await db.mutate(async (data) => {
           data.sessions.push({
             id: db.uuidv4(),
@@ -346,13 +348,13 @@ function registerRoutes(app, io, jwtSecret) {
           });
           logActivity(data, 'admin', 'admin_login', { username }, req, 'success');
         });
-        
+
         return res.json({
           user: { id: 'admin', name: 'Nabeel XD', role: 'admin', email: 'admin@xd' },
           token
         });
       }
-      
+
       return res.status(401).json({ error: 'Invalid admin credentials' });
     } catch (err) {
       res.status(500).json({ error: 'Login failed' });

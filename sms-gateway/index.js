@@ -24,7 +24,9 @@ function initSmsGateway(app, options = {}) {
   const server = http.createServer(app);
   const io = socketIo(server, { cors: { origin: allowedOrigins, methods: ['GET', 'POST'] } });
 
-  registerRoutes(app, io, jwtSecret);
+  const smsApi = require('express').Router();
+  registerRoutes(smsApi, io, jwtSecret);
+  app.use('/smsapi/v1', smsApi);
   setupSocket(io);
 
   return { server, io };

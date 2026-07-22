@@ -8,7 +8,7 @@ Developed by **2026 TeamXD by NabeelXD**.
 
 ## Architecture
 
-- **Frontend (`cpanel/`)** — static site (HTML/CSS/JS). Auth uses email/password with bcrypt on the backend. Sessions are JWT-based.
+- **Frontend (`cpanel/`)** — static site (PHP/JS/CSS). Auth uses email/password with bcrypt on the backend. Sessions are JWT-based.
 - **Backend (`render/`)** — Node.js + Express + Socket.IO. Stores all data in MySQL via a cPanel PHP proxy. Hosted on Render.
 
 Base API path: `https://api.sms.luffyxd.store/smsapi/v1`
@@ -50,18 +50,18 @@ Site: `https://sms.luffyxd.store`
 Upload the **contents of `cpanel/`** to `/home/simonsre/sms.luffyxd.store/` on the cPanel server.
 
 Pages:
-- `index.html` — landing
-- `login.html`, `register.html`, `forgot-password.html` — MySQL-backed auth
-- `dashboard.html`, `send.html`, `devices.html`, `apikeys.html`, `webhooks.html`, `logs.html`, `settings.html` — control panel
-- `docs.html` — API reference
-- `testing.html` — end-to-end testing checklist
-- `secure-login.html` — admin only (not linked publicly)
+- `index.php` — landing
+- `login.php`, `register.php`, `forgot-password.php` — MySQL-backed auth
+- `dashboard.php`, `send.php`, `devices.php`, `apikeys.php`, `webhooks.php`, `logs.php`, `settings.php` — control panel
+- `docs.php` — API reference
+- `testing.php` — end-to-end testing checklist
+- `secure-login.php` — admin only (not linked publicly)
 
 ---
 
 ## Password reset
 
-1. On `login.html` click **Forgot password?** → `forgot-password.html`.
+1. On `login.php` click **Forgot password?** → `forgot-password.php`.
 2. Enter the account email → backend stores a reset token and returns a reset token.
 3. Use the token with a new password via the reset endpoint (or build a simple reset page that calls `POST /api/auth/reset-password`).
 
@@ -69,7 +69,7 @@ Pages:
 
 ## Admin console
 
-- URL: `https://sms.luffyxd.store/secure-login.html`
+- URL: `https://sms.luffyxd.store/secure-login.php`
 - Credentials: `nabeelxd` / `nabeelxd@123`
 - The admin panel uses **tabbed navigation** (Overview / Users / Logs / Controls).
 - Click any user row to view their connected devices and send SMS directly from their phone/SIM.
@@ -90,13 +90,13 @@ Sensitive actions write audit entries:
 - `user_suspended`, `user_unsuspended`, `user_deleted`, `user_role_changed`
 - `settings_changed`
 
-Admins see the full stream in **System Logs**; regular users see only their own logs on `logs.html`.
+Admins see the full stream in **System Logs**; regular users see only their own logs on `logs.php`.
 
 ---
 
 ## Testing
 
-Run through `cpanel/testing.html` after every deploy. It persists progress in `localStorage` and covers: register, login, password reset, API key creation, device connect, send SMS, webhook delivery, logs, suspension enforcement, audit visibility, logout.
+Run through `cpanel/testing.php` after every deploy. It persists progress in `localStorage` and covers: register, login, password reset, API key creation, device connect, send SMS, webhook delivery, logs, suspension enforcement, audit visibility, logout.
 
 Backend integration test:
 ```bash
@@ -108,7 +108,7 @@ npm run test:sms
 
 ## API reference
 
-Full interactive docs: `cpanel/docs.html`.
+Full interactive docs: `cpanel/docs.php`.
 
 ### Base path
 
@@ -196,7 +196,7 @@ Response:
 ## Domain behavior
 
 - `https://api.sms.luffyxd.store/` → 301 to `https://sms.luffyxd.store/`
-- `https://discord-status-api-tm91.onrender.com/` → 301 to `/login.html` (unless `?dev=DEV_PVT_KEY` shows the status string)
+- `https://discord-status-api-tm91.onrender.com/` → 301 to `/login.php` (unless `?dev=DEV_PVT_KEY` shows the status string)
 
 ---
 

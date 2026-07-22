@@ -1,2 +1,6 @@
 node_modules
 .env
+cpanel/
+deploy-cpanel.ps1
+cleanup-old-html.ps1
+rename-links.ps1
