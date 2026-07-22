@@ -167,54 +167,60 @@ function registerRoutes(app, io, jwtSecret) {
       attempts.push(now);
       registerRateLimiter.set(rateLimitKey, attempts);
 
-      const result = await db.mutate(async (data) => {
-        if (db.findUserByEmail(data, email)) return { error: 'Email already registered', status: 400 };
+      try {
+        const result = await db.mutate(async (data) => {
+          if (db.findUserByEmail(data, email)) return { error: 'Email already registered', status: 400 };
 
-        const userId = db.uuidv4();
-        const passwordHash = await new Promise((resolve, reject) => {
-          bcrypt.hash(password, 10, (err, hash) => err ? reject(err) : resolve(hash));
+          const userId = db.uuidv4();
+          const passwordHash = await new Promise((resolve, reject) => {
+            bcrypt.hash(password, 10, (err, hash) => err ? reject(err) : resolve(hash));
+          });
+
+          const user = {
+            id: userId,
+            email,
+            name,
+            role: 'user',
+            password_hash: passwordHash,
+            created_at: db.now(),
+            updated_at: db.now()
+          };
+          data.users.push(user);
+          data.settings.push({
+            id: db.uuidv4(),
+            user_id: userId,
+            timezone: 'UTC',
+            language: 'en',
+            theme: 'system',
+            notifications_enabled: true,
+            created_at: db.now(),
+            updated_at: db.now()
+          });
+          db.getGatewayState(data, userId);
+
+          const token = jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
+          data.sessions.push({
+            id: db.uuidv4(),
+            user_id: userId,
+            token,
+            ip_address: clientIP,
+            user_agent: req.headers['user-agent'] || '',
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            created_at: db.now()
+          });
+          logActivity(data, userId, 'user_registered', { email, name }, req, 'success');
+          return { user: db.sanitizeUser(user), token, status: 201 };
         });
 
-        const user = {
-          id: userId,
-          email,
-          name,
-          role: 'user',
-          password_hash: passwordHash,
-          created_at: db.now(),
-          updated_at: db.now()
-        };
-        data.users.push(user);
-        data.settings.push({
-          id: db.uuidv4(),
-          user_id: userId,
-          timezone: 'UTC',
-          language: 'en',
-          theme: 'system',
-          notifications_enabled: true,
-          created_at: db.now(),
-          updated_at: db.now()
-        });
-        db.getGatewayState(data, userId);
-
-        const token = jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
-        data.sessions.push({
-          id: db.uuidv4(),
-          user_id: userId,
-          token,
-          ip_address: clientIP,
-          user_agent: req.headers['user-agent'] || '',
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          created_at: db.now()
-        });
-        logActivity(data, userId, 'user_registered', { email, name }, req, 'success');
-        return { user: db.sanitizeUser(user), token, status: 201 };
-      });
-
-      if (result.error) return res.status(result.status || 400).json({ error: result.error });
-      res.status(result.status || 201).json({ user: result.user, token: result.token });
+        if (result.error) return res.status(result.status || 400).json({ error: result.error });
+        res.status(result.status || 201).json({ user: result.user, token: result.token });
+      } catch (dbErr) {
+        console.error('Registration DB error:', dbErr.message);
+        res.status(500).json({ error: 'Database error: ' + dbErr.message });
+      }
     } catch (err) {
-      res.status(500).json({ error: 'Registration failed' });
+      console.error('Registration error:', err.message);
+      res.status(500).json({ error: 'Registration failed: ' + err.message });
     }
   });
 
@@ -227,35 +233,41 @@ function registerRoutes(app, io, jwtSecret) {
       const { email, password } = body || {};
       if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-      const result = await db.mutate(async (data) => {
-        const user = db.findUserByEmail(data, email);
-        if (!user || !user.password_hash) return { error: 'Invalid email or password', status: 401 };
+      try {
+        const result = await db.mutate(async (data) => {
+          const user = db.findUserByEmail(data, email);
+          if (!user || !user.password_hash) return { error: 'Invalid email or password', status: 401 };
 
-        const match = await new Promise((resolve) => {
-          bcrypt.compare(password, user.password_hash, (err, ok) => resolve(ok));
+          const match = await new Promise((resolve) => {
+            bcrypt.compare(password, user.password_hash, (err, ok) => resolve(ok));
+          });
+          if (!match) return { error: 'Invalid email or password', status: 401 };
+
+          const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+          data.sessions = data.sessions.filter((s) => s.user_id !== user.id);
+          data.sessions.push({
+            id: db.uuidv4(),
+            user_id: user.id,
+            token,
+            ip_address: getClientIP(req),
+            user_agent: req.headers['user-agent'] || '',
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            created_at: db.now()
+          });
+          logActivity(data, user.id, 'user_login', {}, req, 'success');
+          user.last_login = db.now();
+          return { user: db.sanitizeUser(user), token };
         });
-        if (!match) return { error: 'Invalid email or password', status: 401 };
 
-        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
-        data.sessions = data.sessions.filter((s) => s.user_id !== user.id);
-        data.sessions.push({
-          id: db.uuidv4(),
-          user_id: user.id,
-          token,
-          ip_address: getClientIP(req),
-          user_agent: req.headers['user-agent'] || '',
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          created_at: db.now()
-        });
-        logActivity(data, user.id, 'user_login', {}, req, 'success');
-        user.last_login = db.now();
-        return { user: db.sanitizeUser(user), token };
-      });
-
-      if (result.error) return res.status(result.status || 401).json({ error: result.error });
-      res.json(result);
+        if (result.error) return res.status(result.status || 401).json({ error: result.error });
+        res.json(result);
+      } catch (dbErr) {
+        console.error('Login DB error:', dbErr.message);
+        res.status(500).json({ error: 'Database error: ' + dbErr.message });
+      }
     } catch (err) {
-      res.status(500).json({ error: 'Login failed' });
+      console.error('Login error:', err.message);
+      res.status(500).json({ error: 'Login failed: ' + err.message });
     }
   });
 

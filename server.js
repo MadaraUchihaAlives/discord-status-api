@@ -62,54 +62,22 @@ const smtpConfig = {
 
 const transporter = nodemailer.createTransport(smtpConfig);
 
-function encodeEmailKey(email) {
-  return email
-    .replace(/\./g, '__dot__')
-    .replace(/#/g, '__hash__')
-    .replace(/\$/g, '__dollar__')
-    .replace(/\[/g, '__lb__')
-    .replace(/\]/g, '__rb__')
-    .replace(/\//g, '__slash__');
-}
-
-function decodeEmailKey(key) {
-  return key
-    .replace(/__dot__/g, '.')
-    .replace(/__hash__/g, '#')
-    .replace(/__dollar__/g, '$')
-    .replace(/__lb__/g, '[')
-    .replace(/__rb__/g, ']')
-    .replace(/__slash__/g, '/');
-}
+const memoryStore = { users: {}, oauthUsers: {} };
 
 async function getData() {
-  const fbUsers = await rtdb.get('pcpanel/users') || {};
-  const users = {};
-  for (const [encodedEmail, userData] of Object.entries(fbUsers)) {
-    users[decodeEmailKey(encodedEmail)] = userData;
-  }
-  return { users };
+  return { users: memoryStore.users };
 }
 
 async function saveData(data) {
-  const fbUsers = {};
-  for (const [email, userData] of Object.entries(data.users)) {
-    fbUsers[encodeEmailKey(email)] = userData;
-  }
-  await rtdb.set('pcpanel/users', Object.keys(fbUsers).length > 0 ? fbUsers : null);
+  memoryStore.users = data.users || {};
 }
 
 async function getOAuthData() {
-  try {
-    oauthUsers = await rtdb.get('oauth/users') || {};
-  } catch (err) {
-    console.warn('OAuth data load failed:', err.message);
-    oauthUsers = {};
-  }
+  return { users: memoryStore.oauthUsers };
 }
 
-async function saveOAuthData() {
-  await rtdb.set('oauth/users', Object.keys(oauthUsers).length > 0 ? oauthUsers : null);
+async function saveOAuthData(data) {
+  memoryStore.oauthUsers = data.users || {};
 }
 
 function generateOTP() {
