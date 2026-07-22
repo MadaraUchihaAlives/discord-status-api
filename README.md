@@ -1,6 +1,6 @@
 # XD SMS Gateway
 
-Turn any Android phone into a private, programmable SMS gateway. A clean web control panel, a REST API, signed webhooks, and an admin console — backed by Firebase Auth + Realtime Database.
+Turn any Android phone into a private, programmable SMS gateway. A clean web control panel, a REST API, signed webhooks, and an admin console — backed by MySQL + JWT auth.
 
 Developed by **2026 TeamXD by NabeelXD**.
 
@@ -8,32 +8,26 @@ Developed by **2026 TeamXD by NabeelXD**.
 
 ## Architecture
 
-- **Frontend (`cpanel/`)** — static site (HTML/CSS/JS). Auth uses Firebase Authentication (email/password + password reset). The backend issues a short-lived JWT for API calls.
-- **Backend (`render/`)** — Node.js + Express + Socket.IO. Stores all data in Firebase Realtime Database and verifies Firebase ID tokens. Hosted on Render.
+- **Frontend (`cpanel/`)** — static site (HTML/CSS/JS). Auth uses email/password with bcrypt on the backend. Sessions are JWT-based.
+- **Backend (`render/`)** — Node.js + Express + Socket.IO. Stores all data in MySQL via a cPanel PHP proxy. Hosted on Render.
 
 Base API path: `https://api.sms.luffyxd.store/smsapi/v1`
 Site: `https://sms.luffyxd.store`
 
 ---
 
-## Prerequisites (Firebase)
+## Prerequisites
 
-Both the frontend and backend MUST use the **same** Firebase project.
-
-In the Firebase console for `api-firebase-nabeelxd`:
-
-1. **Authentication** → enable **Email/Password**.
-2. **Authentication** → Settings → add `sms.luffyxd.store` and `api.sms.luffyxd.store` to authorized domains.
-3. **Realtime Database** → create the database. Set rules to lock down public access.
-4. **Service accounts** → generate a private key JSON for token verification if using Firebase Admin SDK, or use public key verification (already implemented in `firebase-verify.js`).
-5. Copy the **Database secret** for server-side RTDB access.
+1. MySQL database on cPanel: `simonsre_smsapi` (user: `simonsre_smsapi`, pass: `simonsre_smsapi`).
+2. Import `cpanel/schema.sql` into that database via phpMyAdmin.
+3. Upload `cpanel/` contents to `/home/simonsre/sms.luffyxd.store/` on the cPanel server.
 
 ---
 
 ## Backend deployment (Render)
 
-1. Push the `render/` folder to the Git repo connected to Render.
-2. Set the following environment variables:
+1. Push the repo to GitHub. Render auto-deploys from `main`.
+2. Set the following environment variables in Render Dashboard:
 
 | Variable | Value |
 | --- | --- |
@@ -42,9 +36,7 @@ In the Firebase console for `api-firebase-nabeelxd`:
 | `ADMIN_USERNAME` | `nabeelxd` |
 | `ADMIN_PASSWORD` | `nabeelxd@123` |
 | `DEV_PVT_KEY` | `nabeelxd` |
-| `FIREBASE_PROJECT_ID` | `api-firebase-nabeelxd` |
-| `FIREBASE_DATABASE_URL` | `https://api-firebase-nabeelxd-default-rtdb.asia-southeast1.firebasedatabase.app/` |
-| `FIREBASE_DATABASE_SECRET` | the RTDB secret |
+| `MYSQL_API_URL` | `https://sms.luffyxd.store/api.php` |
 
 3. Point DNS:
    - `sms.luffyxd.store` → cPanel host
@@ -59,7 +51,7 @@ Upload the **contents of `cpanel/`** to `/home/simonsre/sms.luffyxd.store/` on t
 
 Pages:
 - `index.html` — landing
-- `login.html`, `register.html`, `forgot-password.html` — Firebase auth
+- `login.html`, `register.html`, `forgot-password.html` — MySQL-backed auth
 - `dashboard.html`, `send.html`, `devices.html`, `apikeys.html`, `webhooks.html`, `logs.html`, `settings.html` — control panel
 - `docs.html` — API reference
 - `testing.html` — end-to-end testing checklist
@@ -70,8 +62,8 @@ Pages:
 ## Password reset
 
 1. On `login.html` click **Forgot password?** → `forgot-password.html`.
-2. Enter the account email → the page calls `firebase.auth().sendPasswordResetEmail(email)`.
-3. Firebase emails a reset link. User sets a new password on Firebase's hosted page.
+2. Enter the account email → backend stores a reset token and returns a reset token.
+3. Use the token with a new password via the reset endpoint (or build a simple reset page that calls `POST /api/auth/reset-password`).
 
 ---
 
@@ -126,9 +118,11 @@ All user-facing endpoints live under `/smsapi/v1`.
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| POST | `/smsapi/v1/api/auth/register` | Firebase ID token or UID |
-| POST | `/smsapi/v1/api/auth/login` | Firebase ID token or UID |
+| POST | `/smsapi/v1/api/auth/register` | email + password (bcrypt) |
+| POST | `/smsapi/v1/api/auth/login` | email + password (bcrypt) |
 | POST | `/smsapi/v1/api/auth/logout` | JWT |
+| POST | `/smsapi/v1/api/auth/forgot-password` | email |
+| POST | `/smsapi/v1/api/auth/reset-password` | reset token + new password |
 | POST | `/smsapi/v1/api/admin/login` | admin user/pass |
 
 ### Dashboard / stats
@@ -199,27 +193,6 @@ Response:
 
 ---
 
-## Android app guide
-
-The app polls for queued messages, sends them via SIM, and reports delivery.
-
-1. Save the API key from the dashboard.
-2. `POST /smsapi/v1/api/device/connect` on start.
-3. Poll `GET /smsapi/v1/api/get` every ~2 seconds.
-4. Send SMS via `SmsManager`.
-5. Report `POST /smsapi/v1/api/done`.
-6. Heartbeat every 30s via `POST /smsapi/v1/api/device/update`.
-
-Permissions in `AndroidManifest.xml`:
-
-```xml
-<uses-permission android:name="android.permission.SEND_SMS" />
-<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-<uses-permission android:name="android.permission.INTERNET" />
-```
-
----
-
 ## Domain behavior
 
 - `https://api.sms.luffyxd.store/` → 301 to `https://sms.luffyxd.store/`
@@ -229,4 +202,4 @@ Permissions in `AndroidManifest.xml`:
 
 ## Clearing data
 
-To clear Firebase data: go to Firebase Console → Realtime Database → delete the `sms_gateway` node.
+To clear MySQL data: open phpMyAdmin, select `simonsre_smsapi`, and truncate the tables. To clear file-based cache, delete `cpanel/sms_gateway_data.json` if present.

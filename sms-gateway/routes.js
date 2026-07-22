@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const { verifyFirebaseToken } = require('../firebase-verify');
 const db = require('./db');
 
 function getClientIP(req) {
@@ -151,8 +150,9 @@ function registerRoutes(app, io, jwtSecret) {
       if (typeof body === 'string') {
         try { body = JSON.parse(body); } catch(e) {}
       }
-      const { email, name, idToken, uid } = body || {};
-      if (!email || !name) return res.status(400).json({ error: 'All fields required' });
+      const { email, name, password } = body || {};
+      if (!email || !name || !password) return res.status(400).json({ error: 'All fields required' });
+      if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
       const clientIP = getClientIP(req);
       const rateLimitKey = `${clientIP}:${email}`;
@@ -170,27 +170,17 @@ function registerRoutes(app, io, jwtSecret) {
       const result = await db.mutate(async (data) => {
         if (db.findUserByEmail(data, email)) return { error: 'Email already registered', status: 400 };
 
-        let userId = null;
-        if (!idToken && !uid) return { error: 'Firebase ID token required', status: 400 };
-        try {
-          const decoded = await verifyFirebaseToken(idToken);
-          userId = decoded.uid;
-          if (decoded.email && !email) email = decoded.email;
-        } catch (err) {
-          if (uid) {
-            userId = uid;
-          } else {
-            return { error: 'Invalid Firebase token: ' + err.message, status: 401 };
-          }
-        }
-
-        if (!userId) return { error: 'Invalid Firebase token', status: 401 };
+        const userId = db.uuidv4();
+        const passwordHash = await new Promise((resolve, reject) => {
+          bcrypt.hash(password, 10, (err, hash) => err ? reject(err) : resolve(hash));
+        });
 
         const user = {
           id: userId,
           email,
           name,
           role: 'user',
+          password_hash: passwordHash,
           created_at: db.now(),
           updated_at: db.now()
         };
@@ -212,7 +202,7 @@ function registerRoutes(app, io, jwtSecret) {
           id: db.uuidv4(),
           user_id: userId,
           token,
-          ip_address: getClientIP(req),
+          ip_address: clientIP,
           user_agent: req.headers['user-agent'] || '',
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           created_at: db.now()
@@ -234,53 +224,19 @@ function registerRoutes(app, io, jwtSecret) {
       if (typeof body === 'string') {
         try { body = JSON.parse(body); } catch(e) {}
       }
-      const { email, idToken, uid } = body || {};
-      if (!idToken && !uid) return res.status(400).json({ error: 'Firebase ID token required' });
+      const { email, password } = body || {};
+      if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
       const result = await db.mutate(async (data) => {
-        let userId = null;
-        let tokenEmail = email;
-        if (!idToken && !uid) return { error: 'Firebase ID token required', status: 400 };
-        
-        try {
-          const decoded = await verifyFirebaseToken(idToken);
-          userId = decoded.uid;
-          if (decoded.email) tokenEmail = decoded.email;
-        } catch (err) {
-          if (uid) {
-            userId = uid;
-          } else {
-            return { error: 'Invalid Firebase token: ' + err.message, status: 401 };
-          }
-        }
+        const user = db.findUserByEmail(data, email);
+        if (!user || !user.password_hash) return { error: 'Invalid email or password', status: 401 };
 
-        if (!userId) return { error: 'Invalid Firebase token', status: 401 };
+        const match = await new Promise((resolve) => {
+          bcrypt.compare(password, user.password_hash, (err, ok) => resolve(ok));
+        });
+        if (!match) return { error: 'Invalid email or password', status: 401 };
 
-        let user = db.findUserById(data, userId);
-        if (!user) {
-          user = {
-            id: userId,
-            email: tokenEmail,
-            name: decodedName(req.body.name) || tokenEmail.split('@')[0],
-            role: 'user',
-            created_at: db.now(),
-            updated_at: db.now()
-          };
-          data.users.push(user);
-          data.settings.push({
-            id: db.uuidv4(),
-            user_id: userId,
-            timezone: 'UTC',
-            language: 'en',
-            theme: 'system',
-            notifications_enabled: true,
-            created_at: db.now(),
-            updated_at: db.now()
-          });
-          db.getGatewayState(data, userId);
-        }
-
-        const token = jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
         data.sessions = data.sessions.filter((s) => s.user_id !== user.id);
         data.sessions.push({
           id: db.uuidv4(),
@@ -300,6 +256,74 @@ function registerRoutes(app, io, jwtSecret) {
       res.json(result);
     } catch (err) {
       res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      let body = req.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch(e) {}
+      }
+      const { email } = body || {};
+      if (!email) return res.status(400).json({ error: 'Email is required' });
+
+      const result = await db.mutate(async (data) => {
+        const user = db.findUserByEmail(data, email);
+        if (!user) return { message: 'If an account exists, a reset link has been sent.' };
+
+        const resetToken = db.uuidv4();
+        data.password_reset_tokens = data.password_reset_tokens || [];
+        data.password_reset_tokens.push({
+          id: db.uuidv4(),
+          user_id: user.id,
+          token: resetToken,
+          expires_at: new Date(Date.now() + 3600000).toISOString(),
+          created_at: db.now()
+        });
+        logActivity(data, user.id, 'forgot_password_requested', { email }, req, 'success');
+        return { message: 'If an account exists, a reset link has been sent.', reset_token: resetToken };
+      });
+
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to process request' });
+    }
+  });
+
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      let body = req.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch(e) {}
+      }
+      const { token, password } = body || {};
+      if (!token || !password) return res.status(400).json({ error: 'Token and new password are required' });
+      if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+      const result = await db.mutate(async (data) => {
+        data.password_reset_tokens = data.password_reset_tokens || [];
+        const resetEntry = data.password_reset_tokens.find((t) => t.token === token && new Date(t.expires_at) > new Date());
+        if (!resetEntry) return { error: 'Invalid or expired reset token', status: 400 };
+
+        const user = db.findUserById(data, resetEntry.user_id);
+        if (!user) return { error: 'User not found', status: 404 };
+
+        user.password_hash = await new Promise((resolve, reject) => {
+          bcrypt.hash(password, 10, (err, hash) => err ? reject(err) : resolve(hash));
+        });
+        user.updated_at = db.now();
+
+        data.password_reset_tokens = data.password_reset_tokens.filter((t) => t.token !== token);
+        data.sessions = data.sessions.filter((s) => s.user_id !== user.id);
+        logActivity(data, user.id, 'password_reset', {}, req, 'success');
+        return { message: 'Password reset successful' };
+      });
+
+      if (result.error) return res.status(result.status || 400).json({ error: result.error });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to reset password' });
     }
   });
 

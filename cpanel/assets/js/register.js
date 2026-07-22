@@ -12,7 +12,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
   btn.textContent = "Creating account…";
 
   try {
-    const { response, data } = await window.XD_SMS.firebaseRegister(name, email, password);
+    const { response, data } = await window.XD_SMS.register(name, email, password);
 
     if (response.ok) {
       window.XD_SMS.setSession(data.token, data.user);
@@ -26,17 +26,9 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
   } catch (err) {
     alertBox.hidden = false;
     alertBox.className = "alert alert-error";
-    const msgs = {
-      "auth/email-already-in-use": "An account with this email already exists.",
-      "auth/invalid-email": "Please enter a valid email address.",
-      "auth/weak-password": "Password must be at least 6 characters.",
-      "auth/operation-not-allowed": "Email/password sign-up is not enabled."
-    };
-    alertBox.textContent = msgs[err.code] || err.message || "Registration failed";
+    alertBox.textContent = err.message || "Registration failed";
   } finally {
     btn.disabled = false;
     btn.textContent = btnText;
   }
 });
-
-

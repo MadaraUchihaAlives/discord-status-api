@@ -11,7 +11,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   btn.textContent = "Signing in…";
 
   try {
-    const { response, data } = await window.XD_SMS.firebaseLogin(email, password);
+    const { response, data } = await window.XD_SMS.login(email, password);
 
     if (response.ok) {
       window.XD_SMS.setSession(data.token, data.user);
@@ -25,20 +25,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   } catch (err) {
     alertBox.hidden = false;
     alertBox.className = "alert alert-error";
-
-    const msgs = {
-      "auth/user-not-found": "No account found with this email.",
-      "auth/wrong-password": "Incorrect password. Try again.",
-      "auth/invalid-email": "Please enter a valid email address.",
-      "auth/user-disabled": "This account has been disabled.",
-      "auth/too-many-requests": "Too many failed attempts. Please wait a moment.",
-      "auth/invalid-credential": "Invalid email or password."
-    };
-    alertBox.textContent = msgs[err.code] || err.message || "Login failed";
+    alertBox.textContent = err.message || "Login failed";
   } finally {
     btn.disabled = false;
     btn.textContent = btnText;
   }
 });
-
-

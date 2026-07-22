@@ -10,24 +10,25 @@ document.getElementById("forgotForm").addEventListener("submit", async (e) => {
   btn.textContent = "Sending…";
 
   try {
-    await window.XD_SMS.firebaseForgotPassword(email);
+    const { response, data } = await window.XD_SMS.forgotPassword(email);
+
+    if (response.ok) {
+      alertBox.hidden = false;
+      alertBox.className = "alert alert-success";
+      alertBox.textContent = data?.message || "If an account exists, a reset link has been sent.";
+      document.getElementById("email").value = "";
+      return;
+    }
+
     alertBox.hidden = false;
-    alertBox.className = "alert alert-success";
-    alertBox.textContent = "Password reset email sent. Check your inbox (and spam folder).";
-    document.getElementById("email").value = "";
+    alertBox.className = "alert alert-error";
+    alertBox.textContent = data?.error || "Failed to send reset email";
   } catch (err) {
     alertBox.hidden = false;
     alertBox.className = "alert alert-error";
-    const msgs = {
-      "auth/user-not-found": "No account found with this email address.",
-      "auth/invalid-email": "Please enter a valid email address.",
-      "auth/too-many-requests": "Too many requests. Please try again later."
-    };
-    alertBox.textContent = msgs[err.code] || err.message || "Failed to send reset email";
+    alertBox.textContent = err.message || "Failed to send reset email";
   } finally {
     btn.disabled = false;
     btn.textContent = btnText;
   }
 });
-
-

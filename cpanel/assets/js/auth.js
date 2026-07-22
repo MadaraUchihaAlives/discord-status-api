@@ -98,8 +98,8 @@ window.XD_SMS.initSidebar = function (activePage) {
       window.location.href = "secure-login.html";
       return;
     }
-    if (window.XD_SMS.firebaseLogout) {
-      await window.XD_SMS.firebaseLogout();
+    if (window.XD_SMS.logout) {
+      await window.XD_SMS.logout();
     } else {
       await window.XD_SMS.api("/api/auth/logout", { method: "POST" });
       window.XD_SMS.clearSession();
