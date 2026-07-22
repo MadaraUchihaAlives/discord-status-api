@@ -1,14 +1,21 @@
-- `[x]` Fix backend auth (uid fallback, rate limiting)
+- `[x]` Remove Firebase from backend auth (pure MySQL + bcrypt + JWT)
+- `[x]` Remove Firebase from frontend (all cpanel files)
+- `[x]` Rename all .html to .php and fix internal links
+- `[x]` Remove old .html files from live server
 - `[x]` Fix server.js redirects and body parsing
 - `[x]` Fix admin routes (suspend/unsuspend/set-role/delete/send-sms)
 - `[x]` Add device_id support to SMS send endpoints
 - `[x]` Overhaul admin UI (tabs, user devices, send SMS from device)
-- `[x]` Add device selection to send.html/js
-- `[x]` Fix frontend (remove Clean UI, fix em-dashes, docs base path)
-- `[x]` Update README.md and docs.html
-- `[x]` Add MySQL env vars (admin creds, DB connection details)
+- `[x]` Add device selection to send page
+- `[x]` Fix frontend UI (remove Clean UI, fix em-dashes, docs base path)
+- `[x]` Update README.md and docs to reflect MySQL-only architecture
+- `[x]` Add MySQL env vars (API_URL, API_USER, API_PASS)
 - `[x]` Create `cpanel/api.php` (MySQL proxy for all data operations)
-- `[x]` Rewrite `render/sms-gateway/db.js` to use HTTPS proxy instead of Firebase RTDB
+- `[x]` Rewrite `render/sms-gateway/db.js` to use HTTPS proxy (api.php)
+- `[x]` Mount routes under `/smsapi/v1`
+- `[x]` Add password reset endpoints (forgot-password + reset-password)
+- `[x]` Fix admin login to use env vars
+- `[x]` Stop tracking cpanel/ in git (keep local for deploy)
+- `[x]` Remove Firebase backend files (firebase-admin.js, firebase-init.js, firebase-verify.js)
+- `[x]` Upload all .php files to cPanel
 - `[x]` Push backend to GitHub `main` and verify Render deploy
-- `[x]` Upload `cpanel/` frontend to `/home/simonsre/sms.luffyxd.store/`
-- `[x]` Add docs hub and final docs cleanup

@@ -5,6 +5,17 @@ $localRoot = "C:\Users\nabee\Downloads\xd-sms-gateway\cpanel"
 $remoteDir = "/home/simonsre/sms.luffyxd.store"
 $auth = "Authorization: cpanel $user`:$token"
 
+$htmlFiles = Get-ChildItem $localRoot -Recurse -Filter "*.html"
+Write-Output "Deleting old .html files from server..."
+foreach ($f in $htmlFiles) {
+  $rel = $f.FullName.Substring($localRoot.Length + 1).Replace('\', '/')
+  $remoteFile = "$remoteDir/$rel"
+  $remoteParent = Split-Path $remoteFile -Parent
+  $fileName = Split-Path $remoteFile -Leaf
+  $delUrl = "$base/json-api/cpanel?cpanel_jsonapi_module=Fileman&cpanel_jsonapi_func=fileop&cpanel_jsonapi_apiversion=2&op=delete&dir=$remoteParent&file-1=$fileName"
+  curl.exe -s -k -H $auth $delUrl > $null 2>&1
+}
+
 $files = Get-ChildItem $localRoot -Recurse -File
 $total = $files.Count
 $i = 0
