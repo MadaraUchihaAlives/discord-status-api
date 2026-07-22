@@ -3,7 +3,7 @@
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
-const API_URL = process.env.MYSQL_API_URL || process.env.FRONTEND_URL ? process.env.FRONTEND_URL + '/cpanel/api.php' : 'https://api.sms.luffyxd.store/cpanel/api.php';
+const API_URL = process.env.MYSQL_API_URL || process.env.FRONTEND_URL ? process.env.FRONTEND_URL + '/api.php' : 'https://sms.luffyxd.store/api.php';
 const API_USER = process.env.MYSQL_API_USER || process.env.ADMIN_USERNAME;
 const API_PASS = process.env.MYSQL_API_PASS || process.env.ADMIN_PASSWORD;
 
