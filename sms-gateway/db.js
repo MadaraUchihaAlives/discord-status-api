@@ -7,20 +7,35 @@ const API_URL = process.env.MYSQL_API_URL || (process.env.FRONTEND_URL ? process
 const API_USER = process.env.MYSQL_API_USER || process.env.ADMIN_USERNAME;
 const API_PASS = process.env.MYSQL_API_PASS || process.env.ADMIN_PASSWORD;
 
-function authHeader() {
-  return API_USER && API_PASS ? { Authorization: 'Basic ' + Buffer.from(API_USER + ':' + API_PASS).toString('base64') } : {};
+async function checkProxy() {
+  try {
+    await axios.head(API_URL, { headers: authHeader(), timeout: 5000 });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function getData() {
-  const { data } = await axios.get(API_URL + '?action=read', { headers: authHeader() });
-  return data;
+  try {
+    const { data } = await axios.get(API_URL + '?action=read', { headers: authHeader(), timeout: 15000 });
+    return data;
+  } catch (err) {
+    console.error('DB proxy read failed:', err.message, 'URL:', API_URL);
+    throw new Error('Database proxy unreachable: ' + err.message);
+  }
 }
 
 async function mutate(fn) {
-  const data = await getData();
-  const result = await fn(data);
-  await axios.post(API_URL + '?action=write', data, { headers: { ...authHeader(), 'Content-Type': 'application/json' } });
-  return result;
+  try {
+    const { data } = await axios.get(API_URL + '?action=read', { headers: authHeader(), timeout: 15000 });
+    const result = await fn(data);
+    await axios.post(API_URL + '?action=write', data, { headers: { ...authHeader(), 'Content-Type': 'application/json' }, timeout: 15000 });
+    return result;
+  } catch (err) {
+    console.error('DB proxy write failed:', err.message, 'URL:', API_URL);
+    throw new Error('Database proxy unreachable: ' + err.message);
+  }
 }
 
 function now() {
