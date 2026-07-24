@@ -148,7 +148,7 @@ function registerRoutes(app, io, jwtSecret) {
     try {
       let body = req.body;
       if (typeof body === 'string') {
-        try { body = JSON.parse(body); } catch(e) {}
+        try { body = JSON.parse(body); } catch(e) { body = {}; }
       }
       const { email, name, password } = body || {};
       if (!email || !name || !password) return res.status(400).json({ error: 'All fields required' });
